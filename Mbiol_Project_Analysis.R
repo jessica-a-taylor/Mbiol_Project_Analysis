@@ -273,18 +273,16 @@ zbj_final <- readxl::read_xlsx("C:\Users\jexy2\OneDrive\Documents\Mbiol project\
 # flip columns and rows
 # zbj.focal <- t(zbj.focal)
 
-# convert seq data to occurrence data
+# function for converting seq data to occurrence data
+##### 
+#      seq.to.occurrence <- function(df) { 
+#        ifelse(df > 0,                    
+#               df <- 1, df <- 0)          
+#      }
 #####
-#   zbj.focal <- t(zbj.focal)         
-#                                     
-#   for (row in 1:nrow(zbj.focal)) {  
-#     for (col in 1:ncol(zbj.focal)) {
-#       if(zbj.focal[row,col] > 0) {  
-#         zbj.focal[row,col] <- 1     
-#       }                             
-#     }                               
-#   }
-#####
+
+library(dplyr)
+data.frame(lapply(zbj.focal,seq.to.occurrence))
 
 # add columns with sample and habitat info
 #####                                                                                          
@@ -360,3 +358,41 @@ plot(focal.interact.all)
 anova(focal.interact.all, step = 1000, perm.max = 1000)
 anova(focal.interact.all, by="axis", perm.max=500)
 anova(focal.interact.all, by="terms", permu=200)
+
+# total number of reads for all species == OTU.sum
+#####
+#   insect.data.reads <- insect.data[,-c(1,269:277)]          
+#   OTU.all <- c()                                            
+#   for (col in 1:ncol(insect.data.reads)) {                  
+#     OTU.all <- append(OTU.all, sum(insect.data.reads[,col]))
+#   }                                                         
+#                                                             
+#   OTU.sum <- sum(OTU.all)
+#####
+
+# isolate sequence data for focal species 
+#####
+#   HR.nbrs <- zbj.insect.data.names[HR.focal.nbrs]
+#   HR.focal.df <- zbj.insect.data[,c(HR.nbrs)]    
+#                                                  
+#   RA.nbrs <- zbj.insect.data.names[RA.focal.nbrs]
+#   RA.focal.df <- zbj.insect.data[,c(RA.nbrs)]
+#####
+
+# convert to occurrence data
+data.frame(lapply(HR.focal.df,seq.to.occurrence))
+data.frame(lapply(RA.focal.df,seq.to.occurrence))
+
+# filter for OTUs assigned to taxonomic family
+#####
+#   HR.focal.df <- cbind(HR.focal.df, insect.data$family)                       
+#   HR.na <- which(HR.focal.df$`insect.data$family`=="NA", arr.ind = TRUE)      
+#   more.HR.na <- which(is.na(HR.focal.df$`insect.data$family`), arr.ind = TRUE)
+#   HR.focal.df <- HR.focal.df[-c(HR.na, more.HR.na),]
+#                                                                               
+#   RA.focal.df <- cbind(RA.focal.df, insect.data$family)                       
+#   RA.na <- which(RA.focal.df$`insect.data$family`=="NA", arr.ind = TRUE)      
+#   more.RA.na <- which(is.na(RA.focal.df$`insect.data$family`), arr.ind = TRUE)
+#   RA.focal.df <- RA.focal.df[-c(RA.na, more.RA.na),]
+#####
+
