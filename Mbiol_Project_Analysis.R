@@ -244,7 +244,7 @@ for (row in 1:nrow(zbj_final)) {
 # use hash to create a matrix of sequence data for the focal species
 #####
 zbj.insect.data <- insect.data[,c(2:268)]                                                  
-zbj.insect.data <- zbj.insect.data[,-c(195, 218, 222)]                                     
+zbj.insect.data <- zbj.insect.data[,-c(218, 222)]                                     
 new.zbj.insect.data <- zbj.insect.data                                                     
 
 pred.colnames <- c()                                                                       
@@ -328,27 +328,27 @@ data.scores <- data.scores[-c(155, 158),]
 #####
 
 focal.gg <- ggplot(data = data.scores, aes(x = NMDS1, y = NMDS2)) + 
-  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
+  geom_mark_ellipse(expand=0, aes(fill=Location, colour = Location, size = Location), alpha = 0.1) +
   geom_point(data = data.scores, aes(shape = Species), size = 3, alpha = 0.5, show.legend = FALSE) + 
   theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
         panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
         axis.ticks = element_blank(), legend.key = element_blank(),
         legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
         legend.text = element_text(size = 9, colour = "grey30")) + 
-  scale_size_manual(values = c(0.2,0.2))
+  scale_size_manual(values = c(0.2,0.2, 0.2))
 
 focal.gg
 
-focal.interact.species <- capscale(zbj.focal[1:950] ~ zbj.focal$Species, distance = "jaccard", add = TRUE)
+focal.interact.species <- capscale(zbj.focal[1:944] ~ zbj.focal$Species, distance = "jaccard", add = TRUE)
 anova(focal.interact.species, step = 1000, perm.max = 1000)
 
-focal.interact.season <- capscale(zbj.focal[1:950] ~ zbj.focal$Season, distance = "jaccard", add = TRUE)
+focal.interact.season <- capscale(zbj.focal[1:944] ~ zbj.focal$Season, distance = "jaccard", add = TRUE)
 anova(focal.interact.season, step = 1000, perm.max = 1000)
 
-focal.interact.location <- capscale(zbj.focal[1:950] ~ zbj.focal$Location, distance = "jaccard", add = TRUE)
+focal.interact.location <- capscale(zbj.focal[1:944] ~ zbj.focal$Location, distance = "jaccard", add = TRUE)
 anova(focal.interact.location, step = 1000, perm.max = 1000)
 
-focal.interact.all <- capscale(zbj.focal[1:950] ~ zbj.focal$Species + zbj.focal$Season + zbj.focal$Location, distance = "jaccard", add = TRUE)
+focal.interact.all <- capscale(zbj.focal[1:944] ~ zbj.focal$Species + zbj.focal$Season + zbj.focal$Location, distance = "jaccard", add = TRUE)
 plot(focal.interact.all)
 anova(focal.interact.all, step = 1000, perm.max = 1000)
 anova(focal.interact.all, by="axis", perm.max=500)
@@ -402,52 +402,59 @@ HR.focal.df <- HR.focal.df[-c(HR.focal.df.cut),]
 RA.focal.df.cut <- filter.rows(RA.focal.df[1:82], 1, z)
 RA.focal.df <- RA.focal.df[-c(RA.focal.df.cut),]
 #####
-!!!!!!!!!!!!!!!!!!!!
+
 # taxonomic resolution
 #####
 insect.data.order <- insect.data[,c(1,271:274,277)]
 
-HR.focal.df <- cbind(HR.focal.df, insect.data.order)
-RA.focal.df <- cbind(RA.focal.df, insect.data.order)
+HR.focal.df <- cbind(HR.focal.df, insect.data.order[-c(HR.focal.df.cut),])
+RA.focal.df <- cbind(RA.focal.df, insect.data.order[-c(RA.focal.df.cut),])
 
-not.na <- c()
-for (row in 1:nrow(new.HR.data)) {
-  ifelse(new.HR.data[row, "family"]!="NA",
-         not.na <- append(not.na, row),
-         not.na <- not.na)
-}
-
-593-length(HR.is.na)
-(95/length(new.HR.data$order))*100
+#   not.na <- c()                            
+#   for (row in 1:nrow(RA.focal.df)) {       
+#     ifelse(RA.focal.df[row, "genus"]=="NA",
+#            not.na <- append(not.na, row),  
+#            not.na <- not.na)               
+#   }                                        
+#                                            
+#   length(RA.focal.df$order)-length(not.na) 
+#   (90/length(RA.focal.df$order))*100
 #####
 
 # convert to occurrence data
-data.frame(lapply(HR.focal.df,seq.to.occurrence))
-data.frame(lapply(RA.focal.df,seq.to.occurrence))
+#####
+HR.focal.df <- data.frame(lapply(HR.focal.df[,1:79],seq.to.occurrence))
+RA.focal.df <- data.frame(lapply(RA.focal.df[,1:82],seq.to.occurrence))
+
+HR.focal.df <- cbind(HR.focal.df, insect.data.order[-c(HR.focal.df.cut),])
+RA.focal.df <- cbind(RA.focal.df, insect.data.order[-c(RA.focal.df.cut),])
+
+colnames(HR.focal.df) <- c(HR.nbrs, "OTU", "order", "family", "genus", "species", "insect.wPOO")
+colnames(RA.focal.df) <- c(RA.nbrs, "OTU", "order", "family", "genus", "species", "insect.wPOO")
+#####
 
 # filter for OTUs assigned to taxonomic family
 #####
-HR.focal.df <- cbind(HR.focal.df, insect.data$family)
-HR.na <- which(HR.focal.df$`insect.data$family`=="NA", arr.ind = TRUE)      
-more.HR.na <- which(is.na(HR.focal.df$`insect.data$family`), arr.ind = TRUE)
-HR.focal.df <- HR.focal.df[-c(HR.na, more.HR.na),]
+HR.na <- which(HR.focal.df$family=="NA", arr.ind = TRUE)      
+HR.focal.df <- HR.focal.df[-c(HR.na),]
                                                                                
-RA.focal.df <- cbind(RA.focal.df, insect.data$family)                       
-RA.na <- which(RA.focal.df$`insect.data$family`=="NA", arr.ind = TRUE)      
-more.RA.na <- which(is.na(RA.focal.df$`insect.data$family`), arr.ind = TRUE)
-RA.focal.df <- RA.focal.df[-c(RA.na, more.RA.na),]
+RA.na <- which(RA.focal.df$family=="NA", arr.ind = TRUE)      
+RA.focal.df <- RA.focal.df[-c(RA.na),]
 #####
 
 # Venn diagrams showing exclusive and shared OTUs consumed by the focal species
+#####
 library(RAM)
 focal.compare.OTUs <- list(H.ruber = HR.focal.df$OTU,
                            R.alcyone = RA.focal.df$OTU)
 
 group.venn(focal.compare.OTUs, label=FALSE,  lab.cex=1, cex = 1.5,
            cat.cex = 1.5, cat.pos=c(330, 150), cat.dist = 0.05)
+#####
 
 # Venn diagrams showing exclusive and shared OTUs consumed by the focal species 
 #     in each location
+#####
 HR.zbj.data <- zbj_final[zbj_final$Species=="Hipposideros ruber",]
 RA.zbj.data <- zbj_final[zbj_final$Species=="Rhinolophus alcyone",]
 
@@ -455,25 +462,167 @@ HR.Konye.data <- HR.zbj.data[HR.zbj.data$Location=="Konye",]
 HR.Konye.data <- HR.Konye.data[-c(which(is.na(HR.Konye.data$Lab.nbr))),]
 HR.Konye.nbrs <- HR.Konye.data$Lab.nbr
 
+HR.Konye.focal.df <- HR.focal.df[,c(as.character(HR.Konye.nbrs), "OTU")]
+HR.Konye.focal.df.cut <- filter.rows(HR.Konye.focal.df[,1:37], 1, z)
+HR.Konye.focal.df <- HR.Konye.focal.df[-c(HR.Konye.focal.df.cut),]
+
 HR.Ayos.data <- HR.zbj.data[HR.zbj.data$Location=="Ayos",]
 HR.Ayos.data <- HR.Ayos.data[-c(which(is.na(HR.Ayos.data$Lab.nbr))),]
 HR.Ayos.nbrs <- HR.Ayos.data$Lab.nbr
 
-HR.Bokito.data <- HR.zbj.data[HR.zbj.data$Location=="Bokito",]
-HR.Bokito.data <- HR.Bokito.data[-c(which(is.na(HR.Bokito.data$Lab.nbr))),]
-HR.Bokito.nbrs <- HR.Bokito.data$Lab.nbr
+HR.Ayos.focal.df <- HR.focal.df[,c(as.character(HR.Ayos.nbrs), "OTU")]
+HR.Ayos.focal.df.cut <- filter.rows(HR.Ayos.focal.df[,1:35], 1, z)
+HR.Ayos.focal.df <- HR.Ayos.focal.df[-c(HR.Ayos.focal.df.cut),]
+
+HR.wet.data <- HR.zbj.data[HR.zbj.data$Location=="wet",]
+HR.wet.data <- HR.wet.data[-c(which(is.na(HR.wet.data$Lab.nbr))),]
+HR.wet.nbrs <- HR.wet.data$Lab.nbr
+
+HR.wet.focal.df <- HR.focal.df[,c(as.character(HR.wet.nbrs), "OTU")]
+HR.wet.focal.df.cut <- filter.rows(HR.wet.focal.df[,1:7], 1, z)
+HR.wet.focal.df <- HR.wet.focal.df[-c(HR.wet.focal.df.cut),]
 
 RA.Konye.data <- RA.zbj.data[RA.zbj.data$Location=="Konye",]
 RA.Konye.data <- RA.Konye.data[-c(which(is.na(RA.Konye.data$Lab.nbr))),]
 RA.Konye.nbrs <- RA.Konye.data$Lab.nbr
 
+RA.Konye.focal.df <- RA.focal.df[,c(as.character(RA.Konye.nbrs), "OTU")]
+RA.Konye.focal.df.cut <- filter.rows(RA.Konye.focal.df[,1:47], 1, z)
+RA.Konye.focal.df <- RA.Konye.focal.df[-c(RA.Konye.focal.df.cut),]
+
 RA.Ayos.data <- RA.zbj.data[RA.zbj.data$Location=="Ayos",]
 RA.Ayos.data <- RA.Ayos.data[-c(which(is.na(RA.Ayos.data$Lab.nbr))),]
 RA.Ayos.nbrs <- RA.Ayos.data$Lab.nbr
+
+RA.Ayos.focal.df <- RA.focal.df[,c(as.character(RA.Ayos.nbrs), "OTU")]
+RA.Ayos.focal.df.cut <- filter.rows(RA.Ayos.focal.df[,1:33], 1, z)
+RA.Ayos.focal.df <- RA.Ayos.focal.df[-c(RA.Ayos.focal.df.cut),]
 
 RA.Bokito.data <- RA.zbj.data[RA.zbj.data$Location=="Bokito",]
 RA.Bokito.data <- RA.Bokito.data[-c(which(is.na(RA.Bokito.data$Lab.nbr))),]
 RA.Bokito.nbrs <- RA.Bokito.data$Lab.nbr
 
-HR.Konye.focal.df <- HR.focal.df[,c(as.character(HR.Konye.nbrs))]
-filter.rows(HR.Konye.focal.df, 1, HR.Konye.focal.df.cut)
+RA.Bokito.focal.df <- RA.focal.df[,c(as.character(RA.Bokito.nbrs), "OTU")]
+RA.Bokito.focal.df.cut <- filter.rows(RA.Bokito.focal.df[,1:2], 1, z)
+RA.Bokito.focal.df <- RA.Bokito.focal.df[-c(RA.Bokito.focal.df.cut),]
+
+focal.compare.locations.OTUs <- list(H.ruber = HR.Bokito.focal.df$OTU,
+                                     R.alcyone = RA.Bokito.focal.df$OTU)
+
+group.venn(focal.compare.locations.OTUs, label=FALSE,  lab.cex=1, cex = 1.5,
+           cat.cex = 1.5, cat.pos=c(330, 150), cat.dist = 0.05)
+#####
+
+# Venn diagrams showing exclusive and shared OTUs consumed by the focal species 
+#     in each season
+#####
+HR.wet.data <- HR.zbj.data[HR.zbj.data$Season=="wet",]
+HR.wet.data <- HR.wet.data[-c(which(is.na(HR.wet.data$Lab.nbr))),]
+HR.wet.nbrs <- HR.wet.data$Lab.nbr
+
+HR.wet.focal.df <- HR.focal.df[,c(as.character(HR.wet.nbrs), "OTU")]
+HR.wet.focal.df.cut <- filter.rows(HR.wet.focal.df[,1:7], 1, z)
+HR.wet.focal.df <- HR.wet.focal.df[-c(HR.wet.focal.df.cut),]
+
+RA.wet.data <- RA.zbj.data[RA.zbj.data$Season=="wet",]
+RA.wet.data <- RA.wet.data[-c(which(is.na(RA.wet.data$Lab.nbr))),]
+RA.wet.nbrs <- RA.wet.data$Lab.nbr
+
+RA.wet.focal.df <- RA.focal.df[,c(as.character(RA.wet.nbrs), "OTU")]
+RA.wet.focal.df.cut <- filter.rows(RA.wet.focal.df[,1:7], 1, z)
+RA.wet.focal.df <- RA.wet.focal.df[-c(RA.wet.focal.df.cut),]
+
+HR.dry.data <- HR.zbj.data[HR.zbj.data$Season=="dry",]
+HR.dry.data <- HR.dry.data[-c(which(is.na(HR.dry.data$Lab.nbr))),]
+HR.dry.nbrs <- HR.dry.data$Lab.nbr
+
+HR.dry.focal.df <- HR.focal.df[,c(as.character(HR.dry.nbrs), "OTU")]
+HR.dry.focal.df.cut <- filter.rows(HR.dry.focal.df[,1:7], 1, z)
+HR.dry.focal.df <- HR.dry.focal.df[-c(HR.dry.focal.df.cut),]
+
+RA.dry.data <- RA.zbj.data[RA.zbj.data$Season=="dry",]
+RA.dry.data <- RA.dry.data[-c(which(is.na(RA.dry.data$Lab.nbr))),]
+RA.dry.nbrs <- RA.dry.data$Lab.nbr
+
+RA.dry.focal.df <- RA.focal.df[,c(as.character(RA.dry.nbrs), "OTU")]
+RA.dry.focal.df.cut <- filter.rows(RA.dry.focal.df[,1:7], 1, z)
+RA.dry.focal.df <- RA.dry.focal.df[-c(RA.dry.focal.df.cut),]
+
+focal.compare.seasons.OTUs <- list(H.ruber = HR.dry.focal.df$OTU,
+                                     R.alcyone = RA.dry.focal.df$OTU)
+
+group.venn(focal.compare.seasons.OTUs, label=FALSE,  lab.cex=1, cex = 1.5,
+           cat.cex = 1.5, cat.pos=c(330, 150), cat.dist = 0.05)
+#####
+
+# function to count OTUs per sample
+#####
+#   count.OTUs <- function(df) {                             
+#     HR.count.OTUs <- c()                                   
+#     for (col in 1:ncol(df)) {                              
+#       count <- which(df[,col]==1)                          
+#       HR.count.OTUs <- append(HR.count.OTUs, length(count))
+#     }                                                      
+#     return(HR.count.OTUs)                                  
+#                                                            
+#   } 
+#####
+
+# compare average number of OTUs between focal species
+#####
+HR.count.OTUs <- count.OTUs(HR.focal.df[,1:79])
+RA.count.OTUs <- count.OTUs(RA.focal.df[,1:82])
+
+focal.compare.OTUs.df <- data.frame(Species = c(rep("H.ruber", times = length(HR.count.OTUs)),
+                                                rep("R.alcyone", times = length(RA.count.OTUs))),
+                                    Counts = c(HR.count.OTUs, RA.count.OTUs))
+
+focal.compare.OTUs.boxplot <- ggplot(focal.compare.OTUs.df, aes(x = Species, y = Counts, fill = Species)) +
+  geom_boxplot(show.legend = FALSE) + theme_classic() +
+  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
+                                                strip.text = element_text(size = 10),
+                                                axis.title.x = element_text(size = 10),
+                                                axis.text.y = element_text(size = 10)) +
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
+  labs(x = "Species", y = "Number of OTUs")
+
+wilcox.test(HR.count.sum, RA.count.sum)
+shapiro.test(focal.compare.OTUs.df$Counts)
+#####
+
+# compare average number of OTUs between focal species in each location
+#####
+HR.count.OTUs <- count.OTUs(HR.dry.focal.df[,1:52])
+RA.count.OTUs <- count.OTUs(RA.dry.focal.df[,1:32])
+
+focal.compare.OTUs.df <- data.frame(Species = c(rep("H.ruber", times = length(HR.count.OTUs)),
+                                                rep("R.alcyone", times = length(RA.count.OTUs))),
+                                    Counts = c(HR.count.OTUs, RA.count.OTUs))
+
+focal.compare.OTUs.boxplot <- ggplot(focal.compare.OTUs.df, aes(x = Species, y = Counts, fill = Species)) +
+  geom_boxplot(show.legend = FALSE) + theme_classic() +
+  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
+                                                strip.text = element_text(size = 10),
+                                                axis.title.x = element_text(size = 10),
+                                                axis.text.y = element_text(size = 10)) +
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
+  labs(x = "Species", y = "Number of OTUs")
+
+wilcox.test(HR.count.OTUs, RA.count.OTUs)
+shapiro.test(focal.compare.OTUs.df$Counts)
+#####
+
+# bootstrapping function to test for differences between medians (non-parametric test)
+#####
+library(boot)
+#   med.diff <- function(d, i) {                         
+#     df.OTU <- d[i,]                                    
+#     median(df.OTU$Count[df.OTU$Species=="H.ruber"]) -  
+#       median(df.OTU$Count[df.OTU$Species=="R.alcyone"])
+#   }
+
+boot.out <- boot(data = focal.compare.OTUs.df, statistic = med.diff, R = 1000)
+median(boot.out$t)
+
+boot.ci(boot.out, type = "perc")
+#####
