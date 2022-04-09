@@ -23,16 +23,16 @@ insect.data <- insect.data[,-c(56,185,272,274:291)]
 # removing OTUs with less than 10 reads
 # function to remove rows where all cells are below a certain threshold
 #####
-#   filter.rows <- function(x, y, z) {                 
-#     z <- c()                                          
-#     for (row in 1:nrow(x)) {                         
-#       which.row <- which(x[row,] < y)                
-#       if (length(which.row)==length(x[row,])) {      
-#         z <- append(z, row) 
-#       }                                               
-#     } 
-#     return(z)
-#   }
+filter.rows <- function(x, y, z) {                 
+  z <- c()                                          
+  for (row in 1:nrow(x)) {                         
+    which.row <- which(x[row,] < y)                
+    if (length(which.row)==length(x[row,])) {      
+      z <- append(z, row) 
+    }                                               
+  } 
+  return(z)
+}
 #####     
 insect.data.cut <- filter.rows(insect.data[,2:270], 10, z)
                                                                    
@@ -69,19 +69,18 @@ new.insect.data <- as.data.frame(insect.data[,-c(1,269:274)])
 
 # function for calculating FOO
 #####
-#   FOO.function <- function() {                                                                
-#                                                                                               
-#     insect.FOO.counts <- c()                                                                  
-#     for (seq_row in 1:nrow(new.insect.data)) {                                                
-#       I <- 0                                                                                  
-#       for (seq_col in 1:ncol(new.insect.data)) {                                              
-#         ifelse(new.insect.data[seq_row, seq_col] > 0,                                         
-#                I <- I + 1, I <- I) 
-#       }                                                                                       
-#       insect.FOO.counts <- append(insect.FOO.counts, (1/length(names(new.insect.data)))*I*100)
-#     }  
-#     return(insect.FOO.counts)
-#   }
+FOO.function <- function() {                                                                
+                                                                                              insect.FOO.counts <- c()                                                                  
+  for (seq_row in 1:nrow(new.insect.data)) {                                                
+    I <- 0                                                                                  
+    for (seq_col in 1:ncol(new.insect.data)) {                                              
+      ifelse(new.insect.data[seq_row, seq_col] > 0,                                         
+             I <- I + 1, I <- I) 
+    }                                                                                       
+    insect.FOO.counts <- append(insect.FOO.counts, (1/length(names(new.insect.data)))*I*100)
+  }  
+  return(insect.FOO.counts)
+}
 #####
 
 insect.FOO.counts <- FOO.function()
@@ -89,23 +88,23 @@ insect.data <- cbind(insect.data, insect.FOO.counts)
 
 # function for calculating POO
 #####
-#   POO.function <- function() {                                      
-#     insect.POO.counts <- c()                                        
-#     for (seq_row in 1:nrow(new.insect.data)) {                      
-#       I <- 0                                                        
-#       for (seq_col in 1:ncol(new.insect.data)) {                    
-#         ifelse(new.insect.data[seq_row, seq_col] > 0,               
-#                I <- I + 1, I <- I)                                  
-#       }  
-#       insect.POO.counts <- append(insect.POO.counts, I)
-#     }                                                             
-#     sum.insect.POO.counts <- sum(insect.POO.counts)                 
-#     insect.POO <- c()                                               
-#     for (i in insect.POO.counts) {                                  
-#       insect.POO <- append(insect.POO,(i/sum.insect.POO.counts)*100)
-#     }    
-#     return(insect.POO)
-#   }
+POO.function <- function() {                                      
+  insect.POO.counts <- c()                                        
+  for (seq_row in 1:nrow(new.insect.data)) {                      
+    I <- 0                                                        
+    for (seq_col in 1:ncol(new.insect.data)) {                    
+      ifelse(new.insect.data[seq_row, seq_col] > 0,               
+             I <- I + 1, I <- I)                                  
+    }  
+    insect.POO.counts <- append(insect.POO.counts, I)
+  }                                                             
+  sum.insect.POO.counts <- sum(insect.POO.counts)                 
+  insect.POO <- c()                                               
+  for (i in insect.POO.counts) {                                  
+    insect.POO <- append(insect.POO,(i/sum.insect.POO.counts)*100)
+  }    
+  return(insect.POO)
+}
 #####
 
 insect.POO <- POO.function()
@@ -270,10 +269,10 @@ zbj.focal <- t(zbj.focal)
 zbj.focal <- as.data.frame(zbj.focal)
 # function for converting seq data to occurrence data
 ##### 
-#   seq.to.occurrence <- function(df) { 
-#     ifelse(df > 0,                    
-#     df <- 1, df <- 0)                 
-#     }
+seq.to.occurrence <- function(df) { 
+  ifelse(df > 0,                    
+  df <- 1, df <- 0)                 
+}
 #####
 
 library(dplyr)
@@ -474,13 +473,13 @@ HR.Ayos.focal.df <- HR.focal.df[,c(as.character(HR.Ayos.nbrs), "OTU")]
 HR.Ayos.focal.df.cut <- filter.rows(HR.Ayos.focal.df[,1:35], 1, z)
 HR.Ayos.focal.df <- HR.Ayos.focal.df[-c(HR.Ayos.focal.df.cut),]
 
-HR.wet.data <- HR.zbj.data[HR.zbj.data$Location=="wet",]
-HR.wet.data <- HR.wet.data[-c(which(is.na(HR.wet.data$Lab.nbr))),]
-HR.wet.nbrs <- HR.wet.data$Lab.nbr
+HR.Bokito.data <- HR.zbj.data[HR.zbj.data$Location=="Bokito",]
+HR.Bokito.data <- HR.Bokito.data[-c(which(is.na(HR.Bokito.data$Lab.nbr))),]
+HR.Bokito.nbrs <- HR.Bokito.data$Lab.nbr
 
-HR.wet.focal.df <- HR.focal.df[,c(as.character(HR.wet.nbrs), "OTU")]
-HR.wet.focal.df.cut <- filter.rows(HR.wet.focal.df[,1:7], 1, z)
-HR.wet.focal.df <- HR.wet.focal.df[-c(HR.wet.focal.df.cut),]
+HR.Bokito.focal.df <- HR.focal.df[,c(as.character(HR.Bokito.nbrs), "OTU")]
+HR.Bokito.focal.df.cut <- filter.rows(HR.Bokito.focal.df[,1:7], 1, z)
+HR.Bokito.focal.df <- HR.Bokito.focal.df[-c(HR.Bokito.focal.df.cut),]
 
 RA.Konye.data <- RA.zbj.data[RA.zbj.data$Location=="Konye",]
 RA.Konye.data <- RA.Konye.data[-c(which(is.na(RA.Konye.data$Lab.nbr))),]
@@ -557,15 +556,15 @@ group.venn(focal.compare.seasons.OTUs, label=FALSE,  lab.cex=1, cex = 1.5,
 
 # function to count OTUs per sample
 #####
-#   count.OTUs <- function(df) {                             
-#     HR.count.OTUs <- c()                                   
-#     for (col in 1:ncol(df)) {                              
-#       count <- which(df[,col]==1)                          
-#       HR.count.OTUs <- append(HR.count.OTUs, length(count))
-#     }                                                      
-#     return(HR.count.OTUs)                                  
-#                                                            
-#   } 
+count.OTUs <- function(df) {                             
+  HR.count.OTUs <- c()                                   
+  for (col in 1:ncol(df)) {                              
+    count <- which(df[,col]==1)                          
+    HR.count.OTUs <- append(HR.count.OTUs, length(count))
+  }                                                      
+  return(HR.count.OTUs)                                  
+                                                           
+} 
 #####
 
 # compare average number of OTUs between focal species
@@ -615,14 +614,121 @@ shapiro.test(focal.compare.OTUs.df$Counts)
 # bootstrapping function to test for differences between medians (non-parametric test)
 #####
 library(boot)
-#   med.diff <- function(d, i) {                         
-#     df.OTU <- d[i,]                                    
-#     median(df.OTU$Count[df.OTU$Species=="H.ruber"]) -  
-#       median(df.OTU$Count[df.OTU$Species=="R.alcyone"])
-#   }
+med.diff <- function(d, i) {                         
+  df.OTU <- d[i,]                                    
+  median(df.OTU$Count[df.OTU$Species=="H.ruber"]) -  
+    median(df.OTU$Count[df.OTU$Species=="R.alcyone"])
+}
 
 boot.out <- boot(data = focal.compare.OTUs.df, statistic = med.diff, R = 1000)
 median(boot.out$t)
 
 boot.ci(boot.out, type = "perc")
 #####
+
+# diet composition - most common food items
+#####
+not.na <- c()
+for (row in 1:nrow(HR.focal.df)) {
+  ifelse(HR.focal.df[row, "order"]!="NA",
+         not.na <- append(not.na, row),
+         not.na <- not.na)
+}
+
+HR.focal.order <- HR.focal.df[c(not.na),]
+HR.max.wPOO <- max(HR.focal.order$insect.wPOO)
+HR.top.order <- HR.focal.order[HR.focal.order$insect.wPOO==HR.max.wPOO,]
+HR.top.order <- HR.top.order$order
+
+HR.top.families <- HR.focal.order[HR.focal.order$order==HR.top.order,]
+HR.top.families <- unique(HR.top.families$family)
+#####
+
+# Shannon diversity 
+# function for calculating Shannon index
+#####
+library(vegan)
+Shannon.index.function <- function(df) {                                 
+  Shannon.index <- c()                                                   
+                                                                            
+ for (col in 1:ncol(df)) {                                               
+   Shannon.index <- append(Shannon.index, diversity(df[,col], "shannon"))
+ }                                                                       
+     return(Shannon.index)                                                  
+} 
+
+HR.Shannon.index <- Shannon.index.function(HR.focal.df[,1:79])
+RA.Shannon.index <- Shannon.index.function(RA.focal.df[,1:82])
+hist(c(HR.Shannon.index, RA.Shannon.index))
+shapiro.test(c(HR.Shannon.index, RA.Shannon.index))
+
+focal.compare.Shannon <- data.frame(Species = c(rep("H.ruber", times = length(HR.Shannon.index)),
+                                                rep("R.alcyone", times = length(RA.Shannon.index))),
+                                    Counts = c(HR.Shannon.index, RA.Shannon.index))
+
+focal.compare.Shannon.boxplot <- ggplot(focal.compare.Shannon, aes(x = Species, y = Counts, fill = Species)) +
+  geom_boxplot(show.legend = FALSE) + theme_classic() +
+  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
+                                                strip.text = element_text(size = 10),
+                                                axis.title.x = element_text(size = 10),
+                                                axis.text.y = element_text(size = 10)) +
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
+  labs(x = "Species", y = "Shannon index")
+
+
+boot.out <- boot(data = focal.compare.Shannon, statistic = med.diff, R = 1000)
+median(boot.out$t)
+
+boot.ci(boot.out, type = "perc")
+
+HR.Konye.Shannon.index <- Shannon.index.function(HR.Konye.focal.df[,1:37])
+HR.Ayos.Shannon.index <- Shannon.index.function(HR.Ayos.focal.df[,1:35])
+HR.Bokito.Shannon.index <- Shannon.index.function(HR.Bokito.focal.df[,1:7])
+
+RA.Konye.Shannon.index <- Shannon.index.function(RA.Konye.focal.df[,1:47])
+RA.Ayos.Shannon.index <- Shannon.index.function(RA.Ayos.focal.df[,1:33])
+RA.Bokito.Shannon.index <- Shannon.index.function(RA.Bokito.focal.df[,1:2])
+
+locations.compare.Shannon <- data.frame(Species = c(rep("H.ruber", times = length(c(HR.Konye.Shannon.index, HR.Ayos.Shannon.index, HR.Bokito.Shannon.index))),
+                                                       rep("R.alcyone", times = length(c(RA.Konye.Shannon.index, RA.Ayos.Shannon.index, RA.Bokito.Shannon.index)))),
+                                           Location = c(rep("Konye", times = length(HR.Konye.Shannon.index)),
+                                                        rep("Ayos", times = length(HR.Ayos.Shannon.index)),
+                                                        rep("Bokito", times = length(HR.Bokito.Shannon.index)),
+                                                        rep("Konye", times = length(RA.Konye.Shannon.index)),
+                                                        rep("Ayos", times = length(RA.Ayos.Shannon.index)),
+                                                        rep("Bokito", times = length(RA.Bokito.Shannon.index))),
+                                           Shannon.index = c(HR.Konye.Shannon.index, HR.Ayos.Shannon.index, HR.Bokito.Shannon.index,
+                                                             RA.Konye.Shannon.index, RA.Ayos.Shannon.index, RA.Bokito.Shannon.index))
+
+library(ggpubr)
+HR.location.compare.Shannon.boxplot <- ggplot(locations.compare.Shannon, aes(x = Location, y = Shannon.index, fill = Location)) +
+  geom_boxplot(show.legend = FALSE) + theme_classic() +
+  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
+                                                strip.text = element_text(size = 10),
+                                                axis.title.x = element_text(size = 10),
+                                                axis.text.y = element_text(size = 10)) +
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
+  labs(x = "Species", y = "Shannon index") + facet_wrap(vars(Species)) +
+  stat_compare_means(method = "kruskal", label.y = 6) +
+  stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.")    
+
+
+shapiro.test(c(locations.compare.Shannon$Shannon.index))
+
+Shannon.kruskal <- kruskal.test(data = locations.compare.Shannon, x = locations.compare.Shannon$Shannon.index,
+             g = locations.compare.Shannon$Location, formula = Shannon.index ~ Location)
+
+wilcox.test(c(HR.Konye.Shannon.index, RA.Konye.Shannon.index))
+
+med.diff <- function(d, i) {                         
+  df.shannon <- d[i,]                                    
+  median(df.shannon$Shannon.index[df.shannon$Species=="H.ruber"]) -  
+    median(df.shannon$Shannon.index[df.shannon$Species=="R.alcyone"])
+}
+
+boot.out <- boot(data = locations.compare.Shannon[,-2], 
+                 statistic = med.diff, R = 500)
+median(boot.out$t)
+
+boot.ci(boot.out, type = "perc")
