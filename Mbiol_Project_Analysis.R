@@ -1269,3 +1269,264 @@ median(boot.out$t)
 
 boot.ci(boot.out, type = "perc")
 #####
+
+# Occurrence of pest sequences
+pest.data <- readxl::read_xlsx("C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\Pest sequences.xlsx")
+pest.data <- as.data.frame(pest.data)
+pest.data <- pest.data[,-c(56,185,272,274:291)]
+
+
+rownames(pest.data) <- c(pest.data$OTU)
+rownames(HR.focal.df) <- c(HR.focal.df$OTU)
+rownames(RA.focal.df) <- c(RA.focal.df$OTU)
+
+focal.OTUs <- unique(c(HR.focal.df$OTU, RA.focal.df$OTU))
+focal.OTUs <- focal.OTUs[which(focal.OTUs %in% pest.data$OTU)]
+pest.OTUs <- pest.data[c(6,13,26,27,57,62,73,80:82,91,97:102,
+                         111:114,121,129:137,142,149,170:183,
+                         197:202,207:209,15,74,75,88,107,122,
+                         150,203,210,211), "OTU"]
+
+focal.pest.data <- pest.data[c(focal.OTUs),]
+
+final.pest.data <- seq.to.occurrence(focal.pest.data[,2:270])
+final.pest.data <- cbind(final.pest.data, focal.pest.data[,c(1, 273:276)])
+
+HR.pest.df <- final.pest.data[,c(HR.nbrs)]
+HR.pest.df <- cbind(HR.pest.df, final.pest.data[,c(270:274)])
+HR.pest.df.cut <- filter.rows(HR.pest.df[,1:79], 1, z)
+HR.pest.df <- HR.pest.df[-c(HR.pest.df.cut),]
+
+RA.pest.df <- final.pest.data[,c(RA.nbrs)]
+RA.pest.df <- cbind(RA.pest.df, final.pest.data[,c(270:274)])
+RA.pest.df.cut <- filter.rows(RA.pest.df[1:82], 1, z)
+RA.pest.df <- RA.pest.df[-c(RA.pest.df.cut),]
+
+HR.KW.pest.df <- HR.pest.df[,c(as.character(HR.KW.nbrs), "OTU", "order", "family", "genus", "species")]
+HR.KD.pest.df <- HR.pest.df[,c(as.character(HR.KD.nbrs), "OTU", "order", "family", "genus", "species")]
+HR.AW.pest.df <- HR.pest.df[,c(as.character(HR.AW.nbrs), "OTU", "order", "family", "genus", "species")]
+HR.AD.pest.df <- HR.pest.df[,c(as.character(HR.AD.nbrs), "OTU", "order", "family", "genus", "species")]
+HR.BW.pest.df <- HR.pest.df[,c(as.character(HR.BW.nbrs), "OTU", "order", "family", "genus", "species")]
+HR.BD.pest.df <- HR.pest.df[,c(as.character(HR.BD.nbrs), "OTU", "order", "family", "genus", "species")]
+
+RA.KW.pest.df <- RA.pest.df[,c(as.character(RA.KW.nbrs), "OTU", "order", "family", "genus", "species")]
+RA.KD.pest.df <- RA.pest.df[,c(as.character(RA.KD.nbrs), "OTU", "order", "family", "genus", "species")]
+RA.AW.pest.df <- RA.pest.df[,c(as.character(RA.AW.nbrs), "OTU", "order", "family", "genus", "species")]
+RA.AD.pest.df <- RA.pest.df[,c(as.character(RA.AD.nbrs), "OTU", "order", "family", "genus", "species")]
+RA.BW.pest.df <- RA.pest.df[,c(as.character(RA.BW.nbrs), "OTU", "order", "family", "genus", "species")]
+RA.BD.pest.df <- RA.pest.df[,c(as.character(RA.BD.nbrs), "OTU", "order", "family", "genus", "species")]
+
+
+# Venn diagram comparing pest consumption between species
+#####
+library(RAM)
+compare.pest.OTUs <- list(H.ruber = HR.pest.df$OTU,
+                           R.alcyone = RA.pest.df$OTU)
+
+group.venn(compare.pest.OTUs, label=FALSE,  lab.cex=1, cex = 1.5,
+           cat.cex = 1.5, cat.pos=c(330, 30), cat.dist = 0.05)
+
+#####
+
+# Compare average number of pest sequences between species
+#####
+HR.pest.OTUs <- count.OTUs(HR.pest.df[,1:79])
+RA.pest.OTUs <- count.OTUs(RA.pest.df[,1:82])
+
+HR.pest.df <- HR.pest.df[,-c(which(HR.pest.OTUs==0))]
+RA.pest.df <- RA.pest.df[,-c(which(RA.pest.OTUs==0))]
+
+HR.pest.OTUs <- count.OTUs(HR.pest.df[,1:66])
+RA.pest.OTUs <- count.OTUs(RA.pest.df[,1:65])
+
+compare.pest.OTUs.df <- data.frame(Species = c(rep("H.ruber", times = length(HR.pest.OTUs)),
+                                                rep("R.alcyone", times = length(RA.pest.OTUs))),
+                                    Counts = c(HR.pest.OTUs, RA.pest.OTUs))
+
+focal.compare.OTUs.boxplot <- ggplot(compare.pest.OTUs.df, aes(x = Species, y = Counts, fill = Species)) +
+  geom_boxplot(show.legend = FALSE) + theme_classic() +
+  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
+                                                strip.text = element_text(size = 10),
+                                                axis.title.x = element_text(size = 10),
+                                                axis.text.y = element_text(size = 10)) +
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
+  labs(x = "Species", y = "Number of OTUs")
+
+shapiro.test(compare.pest.OTUs.df$Counts)
+wilcox.test(HR.pest.OTUs, RA.pest.OTUs)
+#####
+
+HR.KW.pest.OTUs <- count.OTUs(HR.KW.pest.df[,1:13])
+HR.KD.pest.OTUs <- count.OTUs(HR.KD.pest.df[,1:24])
+HR.AW.pest.OTUs <- count.OTUs(HR.AW.pest.df[,1:10])
+HR.AD.pest.OTUs <- count.OTUs(HR.AD.pest.df[,1:25])
+HR.BW.pest.OTUs <- count.OTUs(HR.BW.pest.df[,1:4])
+HR.BD.pest.OTUs <- count.OTUs(HR.BD.pest.df[,1:3])
+
+RA.KW.pest.OTUs <- count.OTUs(RA.KW.pest.df[,1:29])
+RA.KD.pest.OTUs <- count.OTUs(RA.KD.pest.df[,1:18])
+RA.AW.pest.OTUs <- count.OTUs(RA.AW.pest.df[,1:20])
+RA.AD.pest.OTUs <- count.OTUs(RA.AD.pest.df[,1:13])
+RA.BW.pest.OTUs <- length(which(RA.BW.pest.df[,1]==1))
+RA.BD.pest.OTUs <- length(which(RA.BD.pest.df[,1]==1))
+
+# How does number of pest average number of pest sequences consumed vary between locations and seasons
+#####
+HR.compare.pest.OTUs.df <- data.frame(Species = c(rep("H.ruber", times = length(c(HR.KW.pest.OTUs, HR.KD.pest.OTUs,
+                                                                                   HR.AW.pest.OTUs, HR.AD.pest.OTUs,
+                                                                                   HR.BW.pest.OTUs, HR.BD.pest.OTUs)))),
+                                       LS = c(rep("Konye - wet", times = length(HR.KW.pest.OTUs)), 
+                                              rep("Konye - dry", times = length(HR.KD.pest.OTUs)),
+                                              rep("Ayos - wet", times = length(HR.AW.pest.OTUs)), 
+                                              rep("Ayos - dry", times = length(HR.AD.pest.OTUs)),
+                                              rep("Bokito - wet", times = length(HR.BW.pest.OTUs)), 
+                                              rep("Bokito - dry", times = length(HR.BD.pest.OTUs))),
+                                   Counts = c(HR.KW.pest.OTUs, HR.KD.pest.OTUs,
+                                              HR.AW.pest.OTUs, HR.AD.pest.OTUs,
+                                              HR.BW.pest.OTUs, HR.BD.pest.OTUs))
+
+HR.compare.pest.OTUs.df.boxplot <- ggplot(HR.compare.pest.OTUs.df, aes(x = LS, y = Counts, fill = LS)) +
+  geom_boxplot(show.legend = FALSE) + theme_classic() +
+  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
+                                                strip.text = element_text(size = 12),
+                                                axis.title.x = element_text(size = 12),
+                                                axis.text.y = element_text(size = 10),
+                                                axis.title.y = element_text(size = 12),
+                                                axis.text.x = element_text(size = 10, angle = 90)) +
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
+  labs(x = "Location - Season", y = "Number of pest OTUs") 
+
+HR.compare.pest.OTUs.df.boxplot + annotate("text",
+         x = 1:length(table(HR.compare.pest.OTUs.df$LS)),
+         y = rep(4, times = 6),
+         label = table(HR.compare.pest.OTUs.df$LS),
+         col = "red",
+         vjust = - 1)
+
+library(FSA)
+HR.compare.pest.OTUs.kruskal <- kruskal.test(data = HR.compare.pest.OTUs.df, x = HR.compare.pest.OTUs.df$Counts,
+                                            g = HR.compare.pest.OTUs.df$LS, formula = Counts ~ LS)
+
+dunnTest(Counts ~ LS, data = HR.compare.pest.OTUs.df, method = "bonferroni")
+
+RA.compare.pest.OTUs.df <- data.frame(Species = c(rep("R.alcyone", times = length(c(RA.KW.pest.OTUs, RA.KD.pest.OTUs,
+                                                                                  RA.AW.pest.OTUs, RA.AD.pest.OTUs,
+                                                                                  RA.BW.pest.OTUs, RA.BD.pest.OTUs)))),
+                                      LS = c(rep("Konye - wet", times = length(RA.KW.pest.OTUs)), 
+                                             rep("Konye - dry", times = length(RA.KD.pest.OTUs)),
+                                             rep("Ayos - wet", times = length(RA.AW.pest.OTUs)), 
+                                             rep("Ayos - dry", times = length(RA.AD.pest.OTUs)),
+                                             rep("Bokito - wet", times = length(RA.BW.pest.OTUs)), 
+                                             rep("Bokito - dry", times = length(RA.BD.pest.OTUs))),
+                                      Counts = c(RA.KW.pest.OTUs, RA.KD.pest.OTUs,
+                                                 RA.AW.pest.OTUs, RA.AD.pest.OTUs,
+                                                 RA.BW.pest.OTUs, RA.BD.pest.OTUs))
+
+RA.compare.pest.OTUs.df.boxplot <- ggplot(RA.compare.pest.OTUs.df, aes(x = LS, y = Counts, fill = LS)) +
+  geom_boxplot(show.legend = FALSE) + theme_classic() +
+  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
+                                                strip.text = element_text(size = 12),
+                                                axis.title.x = element_text(size = 12),
+                                                axis.text.y = element_text(size = 10),
+                                                axis.title.y = element_text(size = 12),
+                                                axis.text.x = element_text(size = 10, angle = 90)) +
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
+  labs(x = "Location - Season", y = "Number of pest OTUs") 
+
+RA.compare.pest.OTUs.df.boxplot + annotate("text",
+                                           x = 1:length(table(RA.compare.pest.OTUs.df$LS)),
+                                           y = rep(5, times = 6),
+                                           label = table(RA.compare.pest.OTUs.df$LS),
+                                           col = "red",
+                                           vjust = - 1)
+
+RA.compare.pest.OTUs.kruskal <- kruskal.test(data = RA.compare.pest.OTUs.df, x = RA.compare.pest.OTUs.df$Counts,
+                                             g = RA.compare.pest.OTUs.df$LS, formula = Counts ~ LS)
+
+dunnTest(Counts ~ LS, data = RA.compare.pest.OTUs.df, method = "bonferroni")
+#####
+
+# Occurrence of cocoa pest sequences
+#####
+find.pests <- function(df) {
+  pest.rows <- c()
+  for (row in 1:nrow(df)) {
+    if (df[row, "OTU"] %in% pest.OTUs) {
+      pest.rows <- append(pest.rows, row)
+    }
+  } 
+  return(pest.rows)
+}
+
+HR.KW.cocoa.pests <- find.pests(HR.KW.pest.df)
+HR.KW.cocoa.pests <- HR.KW.pest.df[c(HR.KW.cocoa.pests),]
+
+HR.KD.cocoa.pests <- find.pests(HR.KD.pest.df)
+HR.KD.cocoa.pests <- HR.KD.pest.df[c(HR.KD.cocoa.pests),]
+
+HR.AW.cocoa.pests <- find.pests(HR.AW.pest.df)
+HR.AW.cocoa.pests <- HR.AW.pest.df[c(HR.AW.cocoa.pests),]
+
+HR.AD.cocoa.pests <- find.pests(HR.AD.pest.df)
+HR.AD.cocoa.pests <- HR.AD.pest.df[c(HR.AD.cocoa.pests),]
+
+##
+
+HR.KW.cut <- filter.rows(HR.KW.pest.df[,1:13], 1, z)
+HR.KW.pest.df <- HR.KW.pest.df[-c(HR.KW.cut),]
+
+HR.KD.cut <- filter.rows(HR.KD.pest.df[,1:24], 1, z)
+HR.KD.pest.df <- HR.KD.pest.df[-c(HR.KD.cut),]
+
+HR.AW.cut <- filter.rows(HR.AW.pest.df[,1:10], 1, z)
+HR.AW.pest.df <- HR.AW.pest.df[-c(HR.AW.cut),]
+
+HR.AD.cut <- filter.rows(HR.AD.pest.df[,1:25], 1, z)
+HR.AD.pest.df <- HR.AD.pest.df[-c(HR.AD.cut),]
+
+HR.BW.cut <- filter.rows(HR.BW.pest.df[,1:4], 1, z)
+HR.BW.pest.df <- HR.BW.pest.df[-c(HR.BW.cut),]
+
+HR.BD.cut <- filter.rows(HR.BD.pest.df[,1:3], 1, z)
+HR.BD.pest.df <- HR.BD.pest.df[-c(HR.BD.cut),]
+
+
+RA.KW.cut <- filter.rows(RA.KW.pest.df[,1:29], 1, z)
+RA.KW.pest.df <- RA.KW.pest.df[-c(RA.KW.cut),]
+
+RA.KD.cut <- filter.rows(RA.KD.pest.df[,1:18], 1, z)
+RA.KD.pest.df <- RA.KD.pest.df[-c(RA.KD.cut),]
+
+RA.AW.cut <- filter.rows(RA.AW.pest.df[,1:20], 1, z)
+RA.AW.pest.df <- RA.AW.pest.df[-c(RA.AW.cut),]
+
+RA.AD.cut <- filter.rows(RA.AD.pest.df[,1:13], 1, z)
+RA.AD.pest.df <- RA.AD.pest.df[-c(RA.AD.cut),]
+
+RA.BD.pest.df <- RA.BD.pest.df[c(which(RA.BD.pest.df[,1]==1)),]
+#####
+
+# Occurrence of cocoa pest sequences
+find.pests <- function(df) {
+  pest.rows <- c()
+  for (row in 1:nrow(df)) {
+    if (df[row, "OTU"] %in% pest.OTUs) {
+      pest.rows <- append(pest.rows, row)
+    }
+  } 
+  return(pest.rows)
+}
+
+HR.KW.cocoa.pests <- find.pests(HR.KW.pest.df)
+HR.KW.cocoa.pests <- HR.KW.pest.df[c(HR.KW.cocoa.pests),]
+
+HR.KD.cocoa.pests <- find.pests(HR.KD.pest.df)
+HR.KD.cocoa.pests <- HR.KD.pest.df[c(HR.KD.cocoa.pests),]
+
+HR.AW.cocoa.pests <- find.pests(HR.AW.pest.df)
+HR.AW.cocoa.pests <- HR.AW.pest.df[c(HR.AW.cocoa.pests),]
+
+HR.AD.cocoa.pests <- find.pests(HR.AD.pest.df)
+HR.AD.cocoa.pests <- HR.AD.pest.df[c(HR.AD.cocoa.pests),]
+
+######
