@@ -612,7 +612,7 @@ OTU.sum <- sum(OTU.all)
 #####
 HR.nbrs <- zbj.insect.data.names[HR.focal.nbrs]
 HR.focal.df <- zbj.insect.data[,c(HR.nbrs)]
-                                                 
+
 RA.nbrs <- zbj.insect.data.names[RA.focal.nbrs]
 RA.focal.df <- zbj.insect.data[,c(RA.nbrs)]
 #####
@@ -637,256 +637,21 @@ for (col in 1:ncol(RA.focal.df[1:82])) {
 RA.OTU.sum <- sum(RA.OTU.all)
 #####
 
-# filter out OTUs with 0 occurrences in the focal datasets 
-#####
-HR.focal.df.cut <- filter.rows(HR.focal.df[1:79], 1, z)
-HR.focal.df <- HR.focal.df[-c(HR.focal.df.cut),]
-
-RA.focal.df.cut <- filter.rows(RA.focal.df[1:82], 1, z)
-RA.focal.df <- RA.focal.df[-c(RA.focal.df.cut),]
-#####
-
-# occurrence calculations for focal species
-#####
 new.HR.focal.df <- as.data.frame(HR.focal.df)
-HR.focal.FOO <- FOO.function(new.HR.focal.df)
-HR.focal.POO <- POO.function(new.HR.focal.df)
-HR.focal.wPOO <- wPOO.function(new.HR.focal.df)
-
 new.RA.focal.df <- as.data.frame(RA.focal.df)
-RA.focal.FOO <- FOO.function(new.RA.focal.df)
-RA.focal.POO <- POO.function(new.RA.focal.df)
-RA.focal.wPOO <- wPOO.function(new.RA.focal.df)
 #####
 
-# relative read abundance
-# function for calculatin RRA
-#####
-RRA.function <- function(df) {
-  sum.read.counts <- c()
-  
-  for (row in 1:nrow(df)) {
-        total.read.counts <- c()
-        
-        for (col in 1:ncol(df)) {
-          
-      total.read.counts <- append(total.read.counts, df[row,col]/sum(df[,col]))
-    }
-    sum.read.counts <- append(sum.read.counts, sum(total.read.counts))
-  }
-  return(sum.read.counts)
-}
-#####
+HR.focal.df <- data.frame(lapply(HR.focal.df[,1:79],seq.to.occurrence))
+colnames(HR.focal.df) <- c(HR.nbrs)
+RA.focal.df <- data.frame(lapply(RA.focal.df[,1:82],seq.to.occurrence))
+colnames(RA.focal.df) <- c(RA.nbrs)
 
 new.HR.focal.df <- seq.to.RRA(HR.focal.df[,1:79])
+colnames(new.HR.focal.df) <- c(HR.nbrs)
 new.RA.focal.df <- seq.to.RRA(RA.focal.df[,1:82])
+colnames(new.RA.focal.df) <- c(RA.nbrs)
 
-HR.sum.read.counts <- RRA.function(new.HR.focal.df)
-HR.focal.RRA <- (HR.sum.read.counts/length(ncol(new.HR.focal.df)))*100
-
-RA.sum.read.counts <- RRA.function(new.RA.focal.df)
-RA.focal.RRA <- (RA.sum.read.counts/length(ncol(new.RA.focal.df)))*100
-
-# taxonomic resolution
-#####
-insect.data.order <- insect.data[,c(1,271:274)]
-
-HR.focal.df <- cbind(HR.focal.df, insect.data.order[-c(HR.focal.df.cut),])
-HR.focal.df <- cbind(HR.focal.df, data.frame(HR.focal.FOO, HR.focal.POO, HR.focal.wPOO, HR.focal.RRA))
-
-RA.focal.df <- cbind(RA.focal.df, insect.data.order[-c(RA.focal.df.cut),])
-RA.focal.df <- cbind(RA.focal.df, data.frame(RA.focal.FOO, RA.focal.POO, RA.focal.wPOO, RA.focal.RRA))
-
-new.HR.focal.df <- cbind(new.HR.focal.df, insect.data.order[-c(HR.focal.df.cut),])
-new.HR.focal.df <- cbind(new.HR.focal.df, data.frame(HR.focal.FOO, HR.focal.POO, HR.focal.wPOO, HR.focal.RRA))
-
-new.RA.focal.df <- cbind(new.RA.focal.df, insect.data.order[-c(RA.focal.df.cut),])
-new.RA.focal.df <- cbind(new.RA.focal.df, data.frame(RA.focal.FOO, RA.focal.POO, RA.focal.wPOO, RA.focal.RRA))
-
-
-#   not.na <- c()                            
-#   for (row in 1:nrow(RA.focal.df)) {       
-#     ifelse(RA.focal.df[row, "genus"]=="NA",
-#            not.na <- append(not.na, row),  
-#            not.na <- not.na)               
-#   }                                        
-#                                            
-#   length(RA.focal.df$order)-length(not.na) 
-#   (90/length(RA.focal.df$order))*100
-#####
-
-# convert to occurrence data
-#####
-HR.focal.df <- data.frame(lapply(HR.focal.df[,1:79],seq.to.occurrence))
-RA.focal.df <- data.frame(lapply(RA.focal.df[,1:82],seq.to.occurrence))
-
-HR.focal.df <- cbind(HR.focal.df, insect.data.order[-c(HR.focal.df.cut),])
-RA.focal.df <- cbind(RA.focal.df, insect.data.order[-c(RA.focal.df.cut),])
-
-colnames(HR.focal.df) <- c(HR.nbrs, "OTU", "order", "family", "genus", "species", "insect.wPOO")
-colnames(RA.focal.df) <- c(RA.nbrs, "OTU", "order", "family", "genus", "species", "insect.wPOO")
-#####
-
-# Venn diagrams showing exclusive and shared OTUs consumed by the focal species
-#####
-library(RAM)
-focal.compare.OTUs <- list(H.ruber = HR.focal.df$OTU,
-                           R.alcyone = RA.focal.df$OTU)
-
-group.venn(focal.compare.OTUs, label=FALSE,  lab.cex=1, cex = 1.5,
-           cat.cex = 1.5, cat.pos=c(330, 150), cat.dist = 0.05)
-#####
-
-# Venn diagrams showing exclusive and shared OTUs consumed by the focal species 
-#     in each location
-#####
-HR.zbj.data <- zbj_final[zbj_final$Species=="Hipposideros ruber",]
-RA.zbj.data <- zbj_final[zbj_final$Species=="Rhinolophus alcyone",]
-
-HR.Konye.data <- HR.zbj.data[HR.zbj.data$Location=="Konye",]
-HR.Konye.data <- HR.Konye.data[-c(which(is.na(HR.Konye.data$Lab.nbr))),]
-HR.Konye.nbrs <- HR.Konye.data$Lab.nbr
-
-HR.Konye.focal.df <- HR.focal.df[,c(as.character(HR.Konye.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.Konye.focal.df.cut <- filter.rows(HR.Konye.focal.df[,1:37], 1, z)
-HR.Konye.focal.df <- HR.Konye.focal.df[-c(HR.Konye.focal.df.cut),]
-
-HR.Ayos.data <- HR.zbj.data[HR.zbj.data$Location=="Ayos",]
-HR.Ayos.data <- HR.Ayos.data[-c(which(is.na(HR.Ayos.data$Lab.nbr))),]
-HR.Ayos.nbrs <- HR.Ayos.data$Lab.nbr
-
-HR.Ayos.focal.df <- HR.focal.df[,c(as.character(HR.Ayos.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.Ayos.focal.df.cut <- filter.rows(HR.Ayos.focal.df[,1:35], 1, z)
-HR.Ayos.focal.df <- HR.Ayos.focal.df[-c(HR.Ayos.focal.df.cut),]
-
-HR.Bokito.data <- HR.zbj.data[HR.zbj.data$Location=="Bokito",]
-HR.Bokito.data <- HR.Bokito.data[-c(which(is.na(HR.Bokito.data$Lab.nbr))),]
-HR.Bokito.nbrs <- HR.Bokito.data$Lab.nbr
-
-HR.Bokito.focal.df <- HR.focal.df[,c(as.character(HR.Bokito.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.Bokito.focal.df.cut <- filter.rows(HR.Bokito.focal.df[,1:7], 1, z)
-HR.Bokito.focal.df <- HR.Bokito.focal.df[-c(HR.Bokito.focal.df.cut),]
-
-RA.Konye.data <- RA.zbj.data[RA.zbj.data$Location=="Konye",]
-RA.Konye.data <- RA.Konye.data[-c(which(is.na(RA.Konye.data$Lab.nbr))),]
-RA.Konye.nbrs <- RA.Konye.data$Lab.nbr
-
-RA.Konye.focal.df <- RA.focal.df[,c(as.character(RA.Konye.nbrs), "OTU", "order", "family", "insect.wPOO")]
-RA.Konye.focal.df.cut <- filter.rows(RA.Konye.focal.df[,1:47], 1, z)
-RA.Konye.focal.df <- RA.Konye.focal.df[-c(RA.Konye.focal.df.cut),]
-
-RA.Ayos.data <- RA.zbj.data[RA.zbj.data$Location=="Ayos",]
-RA.Ayos.data <- RA.Ayos.data[-c(which(is.na(RA.Ayos.data$Lab.nbr))),]
-RA.Ayos.nbrs <- RA.Ayos.data$Lab.nbr
-
-RA.Ayos.focal.df <- RA.focal.df[,c(as.character(RA.Ayos.nbrs), "OTU", "order", "family", "insect.wPOO")]
-RA.Ayos.focal.df.cut <- filter.rows(RA.Ayos.focal.df[,1:33], 1, z)
-RA.Ayos.focal.df <- RA.Ayos.focal.df[-c(RA.Ayos.focal.df.cut),]
-
-RA.Bokito.data <- RA.zbj.data[RA.zbj.data$Location=="Bokito",]
-RA.Bokito.data <- RA.Bokito.data[-c(which(is.na(RA.Bokito.data$Lab.nbr))),]
-RA.Bokito.nbrs <- RA.Bokito.data$Lab.nbr
-
-RA.Bokito.focal.df <- RA.focal.df[,c(as.character(RA.Bokito.nbrs), "OTU", "order", "family", "insect.wPOO")]
-RA.Bokito.focal.df.cut <- filter.rows(RA.Bokito.focal.df[,1:2], 1, z)
-RA.Bokito.focal.df <- RA.Bokito.focal.df[-c(RA.Bokito.focal.df.cut),]
-
-focal.compare.locations.OTUs <- list(H.ruber = HR.Konye.focal.df$OTU,
-                                     R.alcyone = RA.Konye.focal.df$OTU)
-
-group.venn(focal.compare.locations.OTUs, label=FALSE,  lab.cex=1, cex = 1.5,
-           cat.cex = 1.5, cat.pos=c(400, 200), cat.dist = 0.05)
-
-# repeat for RRA data
-new.HR.Konye.focal.df <- new.HR.focal.df[,c(as.character(HR.Konye.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.Konye.focal.df.cut <- filter.rows(new.HR.Konye.focal.df[,1:37], 1, z)
-new.HR.Konye.focal.df <- new.HR.Konye.focal.df[-c(new.HR.Konye.focal.df.cut),]
-
-new.HR.Ayos.focal.df <- new.HR.focal.df[,c(as.character(HR.Ayos.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.Ayos.focal.df.cut <- filter.rows(new.HR.Ayos.focal.df[,1:35], 1, z)
-new.HR.Ayos.focal.df <- new.HR.Ayos.focal.df[-c(new.HR.Ayos.focal.df.cut),]
-
-new.HR.Bokito.focal.df <- new.HR.focal.df[,c(as.character(HR.Bokito.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.Bokito.focal.df.cut <- filter.rows(new.HR.Bokito.focal.df[,1:7], 1, z)
-new.HR.Bokito.focal.df <- new.HR.Bokito.focal.df[-c(new.HR.Bokito.focal.df.cut),]
-
-
-new.RA.Konye.focal.df <- new.RA.focal.df[,c(as.character(RA.Konye.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-new.RA.Konye.focal.df.cut <- filter.rows(new.RA.Konye.focal.df[,1:47], 1, z)
-new.RA.Konye.focal.df <- new.RA.Konye.focal.df[-c(new.RA.Konye.focal.df.cut),]
-
-new.RA.Ayos.focal.df <- new.RA.focal.df[,c(as.character(RA.Ayos.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-new.RA.Ayos.focal.df.cut <- filter.rows(new.RA.Ayos.focal.df[,1:33], 1, z)
-new.RA.Ayos.focal.df <- new.RA.Ayos.focal.df[-c(new.RA.Ayos.focal.df.cut),]
-
-new.RA.Bokito.focal.df <- new.RA.focal.df[,c(as.character(RA.Bokito.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-new.RA.Bokito.focal.df.cut <- filter.rows(new.RA.Bokito.focal.df[,1:2], 1, z)
-new.RA.Bokito.focal.df <- new.RA.Bokito.focal.df[-c(new.RA.Bokito.focal.df.cut),]
-
-#####
-
-# Venn diagrams showing exclusive and shared OTUs consumed by the focal species 
-#     in each season
-#####
-HR.wet.data <- HR.zbj.data[HR.zbj.data$Season=="wet",]
-HR.wet.data <- HR.wet.data[-c(which(is.na(HR.wet.data$Lab.nbr))),]
-HR.wet.nbrs <- HR.wet.data$Lab.nbr
-
-HR.wet.focal.df <- HR.focal.df[,c(as.character(HR.wet.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.wet.focal.df.cut <- filter.rows(HR.wet.focal.df[,1:7], 1, z)
-HR.wet.focal.df <- HR.wet.focal.df[-c(HR.wet.focal.df.cut),]
-
-RA.wet.data <- RA.zbj.data[RA.zbj.data$Season=="wet",]
-RA.wet.data <- RA.wet.data[-c(which(is.na(RA.wet.data$Lab.nbr))),]
-RA.wet.nbrs <- RA.wet.data$Lab.nbr
-
-RA.wet.focal.df <- RA.focal.df[,c(as.character(RA.wet.nbrs), "OTU", "order", "family", "insect.wPOO")]
-RA.wet.focal.df.cut <- filter.rows(RA.wet.focal.df[,1:7], 1, z)
-RA.wet.focal.df <- RA.wet.focal.df[-c(RA.wet.focal.df.cut),]
-
-HR.dry.data <- HR.zbj.data[HR.zbj.data$Season=="dry",]
-HR.dry.data <- HR.dry.data[-c(which(is.na(HR.dry.data$Lab.nbr))),]
-HR.dry.nbrs <- HR.dry.data$Lab.nbr
-
-HR.dry.focal.df <- HR.focal.df[,c(as.character(HR.dry.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.dry.focal.df.cut <- filter.rows(HR.dry.focal.df[,1:7], 1, z)
-HR.dry.focal.df <- HR.dry.focal.df[-c(HR.dry.focal.df.cut),]
-
-RA.dry.data <- RA.zbj.data[RA.zbj.data$Season=="dry",]
-RA.dry.data <- RA.dry.data[-c(which(is.na(RA.dry.data$Lab.nbr))),]
-RA.dry.nbrs <- RA.dry.data$Lab.nbr
-
-RA.dry.focal.df <- RA.focal.df[,c(as.character(RA.dry.nbrs), "OTU", "order", "family", "insect.wPOO")]
-RA.dry.focal.df.cut <- filter.rows(RA.dry.focal.df[,1:7], 1, z)
-RA.dry.focal.df <- RA.dry.focal.df[-c(RA.dry.focal.df.cut),]
-
-focal.compare.seasons.OTUs <- list(H.ruber = HR.wet.focal.df$OTU,
-                                   R.alcyone = RA.wet.focal.df$OTU)
-
-group.venn(focal.compare.seasons.OTUs, label=FALSE,  lab.cex=1, cex = 1.5,
-           cat.cex = 1.5, cat.pos=c(330, 150), cat.dist = 0.05)
-
-# repeat for RRA data
-new.HR.wet.focal.df <- new.HR.focal.df[,c(as.character(HR.wet.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.wet.focal.df.cut <- filter.rows(new.HR.wet.focal.df[,1:7], 1, z)
-new.HR.wet.focal.df <- new.HR.wet.focal.df[-c(new.HR.wet.focal.df.cut),]
-
-new.RA.wet.focal.df <- new.RA.focal.df[,c(as.character(RA.wet.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-new.RA.wet.focal.df.cut <- filter.rows(new.RA.wet.focal.df[,1:7], 1, z)
-new.RA.wet.focal.df <- new.RA.wet.focal.df[-c(new.RA.wet.focal.df.cut),]
-
-new.HR.dry.focal.df <- new.HR.focal.df[,c(as.character(HR.dry.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.dry.focal.df.cut <- filter.rows(new.HR.dry.focal.df[,1:7], 1, z)
-new.HR.dry.focal.df <- new.HR.dry.focal.df[-c(new.HR.dry.focal.df.cut),]
-
-new.RA.dry.focal.df <- new.RA.focal.df[,c(as.character(RA.dry.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-new.RA.dry.focal.df.cut <- filter.rows(new.RA.dry.focal.df[,1:7], 1, z)
-new.RA.dry.focal.df <- new.RA.dry.focal.df[-c(new.RA.dry.focal.df.cut),]
-
-#####
-
-# Venn diagrams showing exclusive and shared OTUs consumed by the focal species
-#     in each location during each season
+# presence/absence data for each location-season
 #####
 new.HR.zbj.data <- HR.zbj.data
 new.HR.zbj.data <- cbind(new.HR.zbj.data, paste(new.HR.zbj.data$Location, "-" ,new.HR.zbj.data$Season))
@@ -895,44 +660,44 @@ colnames(new.HR.zbj.data) <- c(names(HR.zbj.data), "Location - Season")
 HR.KW.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Konye - wet",]
 HR.KW.nbrs <- HR.KW.data$Lab.nbr
 
-HR.KW.focal.df <- HR.focal.df[,c(as.character(HR.KW.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.KW.focal.df.cut <- filter.rows(HR.KW.focal.df[,1:13], 1, z)
-HR.KW.focal.df <- HR.KW.focal.df[-c(HR.KW.focal.df.cut),]
+HR.KW.focal.df <- HR.focal.df[,c(as.character(HR.KW.nbrs))]
+HR.KW.focal.cut <- filter.rows(HR.KW.focal.df[,1:13], 1, z)
+HR.KW.focal.cut <- HR.KW.focal.df[-c(HR.KW.focal.cut),]
 
 HR.KD.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Konye - dry",]
 HR.KD.nbrs <- HR.KD.data$Lab.nbr
 
-HR.KD.focal.df <- HR.focal.df[,c(as.character(HR.KD.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.KD.focal.df.cut <- filter.rows(HR.KD.focal.df[,1:24], 1, z)
-HR.KD.focal.df <- HR.KD.focal.df[-c(HR.KD.focal.df.cut),]
+HR.KD.focal.df <- HR.focal.df[,c(as.character(HR.KD.nbrs))]
+HR.KD.focal.cut <- filter.rows(HR.KD.focal.df[,1:24], 1, z)
+HR.KD.focal.cut <- HR.KD.focal.df[-c(HR.KD.focal.cut),]
 
 HR.AW.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Ayos - wet",]
 HR.AW.nbrs <- HR.AW.data$Lab.nbr
 
-HR.AW.focal.df <- HR.focal.df[,c(as.character(HR.AW.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.AW.focal.df.cut <- filter.rows(HR.AW.focal.df[,1:10], 1, z)
-HR.AW.focal.df <- HR.AW.focal.df[-c(HR.AW.focal.df.cut),]
+HR.AW.focal.df <- HR.focal.df[,c(as.character(HR.AW.nbrs))]
+HR.AW.focal.cut <- filter.rows(HR.AW.focal.df[,1:10], 1, z)
+HR.AW.focal.cut <- HR.AW.focal.df[-c(HR.AW.focal.cut),]
 
 HR.AD.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Ayos - dry",]
 HR.AD.nbrs <- HR.AD.data$Lab.nbr
 
-HR.AD.focal.df <- HR.focal.df[,c(as.character(HR.AD.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.AD.focal.df.cut <- filter.rows(HR.AD.focal.df[,1:25], 1, z)
-HR.AD.focal.df <- HR.AD.focal.df[-c(HR.AD.focal.df.cut),]
+HR.AD.focal.df <- HR.focal.df[,c(as.character(HR.AD.nbrs))]
+HR.AD.focal.cut <- filter.rows(HR.AD.focal.df[,1:25], 1, z)
+HR.AD.focal.cut <- HR.AD.focal.df[-c(HR.AD.focal.cut),]
 
 HR.BW.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Bokito - wet",]
 HR.BW.nbrs <- HR.BW.data$Lab.nbr
 
-HR.BW.focal.df <- HR.focal.df[,c(as.character(HR.BW.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.BW.focal.df.cut <- filter.rows(HR.BW.focal.df[,1:4], 1, z)
-HR.BW.focal.df <- HR.BW.focal.df[-c(HR.BW.focal.df.cut),]
+HR.BW.focal.df <- HR.focal.df[,c(as.character(HR.BW.nbrs))]
+HR.BW.focal.cut <- filter.rows(HR.BW.focal.df[,1:4], 1, z)
+HR.BW.focal.cut <- HR.BW.focal.df[-c(HR.BW.focal.cut),]
 
 HR.BD.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Bokito - dry",]
 HR.BD.nbrs <- HR.BD.data$Lab.nbr
 
-HR.BD.focal.df <- HR.focal.df[,c(as.character(HR.BD.nbrs), "OTU", "order", "family", "insect.wPOO")]
-HR.BD.focal.df.cut <- filter.rows(HR.BD.focal.df[,1:3], 1, z)
-HR.BD.focal.df <- HR.BD.focal.df[-c(HR.BD.focal.df.cut),]
+HR.BD.focal.df <- HR.focal.df[,c(as.character(HR.BD.nbrs))]
+HR.BD.focal.cut <- filter.rows(HR.BD.focal.df[,1:3], 1, z)
+HR.BD.focal.cut <- HR.BD.focal.df[-c(HR.BD.focal.cut),]
 
 new.RA.zbj.data <- RA.zbj.data
 new.RA.zbj.data <- cbind(new.RA.zbj.data, paste(new.RA.zbj.data$Location, "-" ,new.RA.zbj.data$Season))
@@ -941,94 +706,219 @@ colnames(new.RA.zbj.data) <- c(names(RA.zbj.data), "Location - Season")
 RA.KW.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Konye - wet",]
 RA.KW.nbrs <- RA.KW.data$Lab.nbr
 
-RA.KW.focal.df <- RA.focal.df[,c(as.character(RA.KW.nbrs), "OTU", "order", "family", "insect.wPOO")]
-RA.KW.focal.df.cut <- filter.rows(RA.KW.focal.df[,1:29], 1, z)
-RA.KW.focal.df <- RA.KW.focal.df[-c(RA.KW.focal.df.cut),]
+RA.KW.focal.df <- RA.focal.df[,c(as.character(RA.KW.nbrs))]
+RA.KW.focal.cut <- filter.rows(RA.KW.focal.df[,1:29], 1, z)
+RA.KW.focal.cut <- RA.KW.focal.df[-c(RA.KW.focal.cut),]
 
 RA.KD.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Konye - dry",]
 RA.KD.nbrs <- RA.KD.data$Lab.nbr
 
-RA.KD.focal.df <- RA.focal.df[,c(as.character(RA.KD.nbrs), "OTU", "order", "family", "insect.wPOO")]
-RA.KD.focal.df.cut <- filter.rows(RA.KD.focal.df[,1:18], 1, z)
-RA.KD.focal.df <- RA.KD.focal.df[-c(RA.KD.focal.df.cut),]
+RA.KD.focal.df <- RA.focal.df[,c(as.character(RA.KD.nbrs))]
+RA.KD.focal.cut <- filter.rows(RA.KD.focal.df[,1:18], 1, z)
+RA.KD.focal.cut <- RA.KD.focal.df[-c(RA.KD.focal.cut),]
 
 RA.AW.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Ayos - wet",]
 RA.AW.nbrs <- RA.AW.data$Lab.nbr
 
-RA.AW.focal.df <- RA.focal.df[,c(as.character(RA.AW.nbrs), "OTU", "order", "family", "insect.wPOO")]
-RA.AW.focal.df.cut <- filter.rows(RA.AW.focal.df[,1:20], 1, z)
-RA.AW.focal.df <- RA.AW.focal.df[-c(RA.AW.focal.df.cut),]
+RA.AW.focal.df <- RA.focal.df[,c(as.character(RA.AW.nbrs))]
+RA.AW.focal.cut <- filter.rows(RA.AW.focal.df[,1:20], 1, z)
+RA.AW.focal.cut <- RA.AW.focal.df[-c(RA.AW.focal.cut),]
 
 RA.AD.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Ayos - dry",]
 RA.AD.nbrs <- RA.AD.data$Lab.nbr
 
-RA.AD.focal.df <- RA.focal.df[,c(as.character(RA.AD.nbrs), "OTU", "order", "family", "insect.wPOO")]
-RA.AD.focal.df.cut <- filter.rows(RA.AD.focal.df[,1:13], 1, z)
-RA.AD.focal.df <- RA.AD.focal.df[-c(RA.AD.focal.df.cut),]
+RA.AD.focal.df <- RA.focal.df[,c(as.character(RA.AD.nbrs))]
+RA.AD.focal.cut <- filter.rows(RA.AD.focal.df[,1:13], 1, z)
+RA.AD.focal.cut <- RA.AD.focal.df[-c(RA.AD.focal.cut),]
 
 RA.BW.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Bokito - wet",]
 RA.BW.nbrs <- RA.BW.data$Lab.nbr
 
-RA.BW.focal.df <- RA.focal.df[,c(as.character(RA.BW.nbrs), "OTU", "order", "family", "insect.wPOO")]
+RA.BW.focal.df <- RA.focal.df[,c(as.character(RA.BW.nbrs))]
 
 RA.BD.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Bokito - dry",]
 RA.BD.nbrs <- RA.BD.data$Lab.nbr
 
-RA.BD.focal.df <- RA.focal.df[,c(as.character(RA.BD.nbrs), "OTU", "order", "family", "insect.wPOO")]
-
-
-focal.compare.LS.OTUs <- list(H.ruber = HR.BD.focal.df$OTU,
-                                   R.alcyone = RA.BD.focal.df$OTU)
-
-group.venn(focal.compare.LS.OTUs, label=FALSE,  lab.cex=1, cex = 1.5,
-           cat.cex = 1.5, cat.pos=c(330, 150), cat.dist = 0.05)
-
-# repeat for RRA data
-new.HR.KW.focal.df <- new.HR.focal.df[,c(as.character(HR.KW.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.KW.focal.df.cut <- filter.rows(new.HR.KW.focal.df[,1:13], 1, z)
-new.HR.KW.focal.df <- new.HR.KW.focal.df[-c(new.HR.KW.focal.df.cut),]
-
-new.HR.KD.focal.df <- new.HR.focal.df[,c(as.character(HR.KD.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.KD.focal.df.cut <- filter.rows(new.HR.KD.focal.df[,1:24], 1, z)
-new.HR.KD.focal.df <- new.HR.KD.focal.df[-c(new.HR.KD.focal.df.cut),]
-
-new.HR.AW.focal.df <- new.HR.focal.df[,c(as.character(HR.AW.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.AW.focal.df.cut <- filter.rows(new.HR.AW.focal.df[,1:10], 1, z)
-new.HR.AW.focal.df <- new.HR.AW.focal.df[-c(new.HR.AW.focal.df.cut),]
-
-new.HR.AD.focal.df <- new.HR.focal.df[,c(as.character(HR.AD.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.AD.focal.df.cut <- filter.rows(new.HR.AD.focal.df[,1:25], 1, z)
-new.HR.AD.focal.df <- new.HR.AD.focal.df[-c(new.HR.AD.focal.df.cut),]
-
-new.HR.BW.focal.df <- new.HR.focal.df[,c(as.character(HR.BW.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.BW.focal.df.cut <- filter.rows(new.HR.BW.focal.df[,1:4], 1, z)
-new.HR.BW.focal.df <- new.HR.BW.focal.df[-c(new.HR.BW.focal.df.cut),]
-
-new.HR.BD.focal.df <- new.HR.focal.df[,c(as.character(HR.BD.nbrs), "OTU", "order", "family", "HR.focal.RRA")]
-new.HR.BD.focal.df.cut <- filter.rows(new.HR.BD.focal.df[,1:3], 1, z)
-new.HR.BD.focal.df <- new.HR.BD.focal.df[-c(new.HR.BD.focal.df.cut),]
-
-new.RA.KW.focal.df <- new.RA.focal.df[,c(as.character(RA.KW.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-new.RA.KW.focal.df.cut <- filter.rows(new.RA.KW.focal.df[,1:29], 1, z)
-new.RA.KW.focal.df <- new.RA.KW.focal.df[-c(RA.KW.focal.df.cut),]
-
-new.RA.KD.focal.df <- new.RA.focal.df[,c(as.character(RA.KD.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-new.RA.KD.focal.df.cut <- filter.rows(new.RA.KD.focal.df[,1:18], 1, z)
-new.RA.KD.focal.df <- new.RA.KD.focal.df[-c(RA.KD.focal.df.cut),]
-
-new.RA.AW.focal.df <- new.RA.focal.df[,c(as.character(RA.AW.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-new.RA.AW.focal.df.cut <- filter.rows(new.RA.AW.focal.df[,1:20], 1, z)
-new.RA.AW.focal.df <- new.RA.AW.focal.df[-c(RA.AW.focal.df.cut),]
-
-new.RA.AD.focal.df <- new.RA.focal.df[,c(as.character(RA.AD.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-new.RA.AD.focal.df.cut <- filter.rows(new.RA.AD.focal.df[,1:13], 1, z)
-new.RA.AD.focal.df <- new.RA.AD.focal.df[-c(new.RA.AD.focal.df.cut),]
-
-new.RA.BW.focal.df <- new.RA.focal.df[,c(as.character(RA.BW.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-
-new.RA.BD.focal.df <- new.RA.focal.df[,c(as.character(RA.BD.nbrs), "OTU", "order", "family", "RA.focal.RRA")]
-
+RA.BD.focal.df <- RA.focal.df[,c(as.character(RA.BD.nbrs))]
 #####
+
+# RRA data for each location-season
+#####
+new.HR.KW.focal.df <- new.HR.focal.df[,c(as.character(HR.KW.nbrs))]
+new.HR.KW.focal.cut <- filter.rows(new.HR.KW.focal.df[,1:13], 0.000001, z)
+new.HR.KW.focal.cut <- new.HR.KW.focal.df[-c(new.HR.KW.focal.cut),]
+
+new.HR.KD.focal.df <- new.HR.focal.df[,c(as.character(HR.KD.nbrs))]
+new.HR.KD.focal.cut <- filter.rows(new.HR.KD.focal.df[,1:24], 0.000001, z)
+new.HR.KD.focal.cut <- new.HR.KD.focal.df[-c(new.HR.KD.focal.cut),]
+
+new.HR.AW.focal.df <- new.HR.focal.df[,c(as.character(HR.AW.nbrs))]
+new.HR.AW.focal.cut <- filter.rows(new.HR.AW.focal.df[,1:10], 0.000001, z)
+new.HR.AW.focal.cut <- new.HR.AW.focal.df[-c(new.HR.AW.focal.cut),]
+
+new.HR.AD.focal.df <- new.HR.focal.df[,c(as.character(HR.AD.nbrs))]
+new.HR.AD.focal.cut <- filter.rows(new.HR.AD.focal.df[,1:25], 0.000001, z)
+new.HR.AD.focal.cut <- new.HR.AD.focal.df[-c(new.HR.AD.focal.cut),]
+
+new.HR.BW.focal.df <- new.HR.focal.df[,c(as.character(HR.BW.nbrs))]
+new.HR.BW.focal.cut <- filter.rows(new.HR.BW.focal.df[,1:4], 1, z)
+new.HR.BW.focal.cut <- new.HR.BW.focal.df[-c(new.HR.BW.focal.cut),]
+
+new.HR.BD.focal.df <- new.HR.focal.df[,c(as.character(HR.BD.nbrs))]
+new.HR.BD.focal.cut <- filter.rows(new.HR.BD.focal.df[,1:3], 0.000001, z)
+new.HR.BD.focal.cut <- new.HR.BD.focal.df[-c(new.HR.BD.focal.cut),]
+
+new.RA.KW.focal.df <- new.RA.focal.df[,c(as.character(RA.KW.nbrs))]
+new.RA.KW.focal.cut <- filter.rows(new.RA.KW.focal.df[,1:29], 1, z)
+new.RA.KW.focal.cut <- new.RA.KW.focal.df[-c(new.RA.KW.focal.cut),]
+
+new.RA.KD.focal.df <- new.RA.focal.df[,c(as.character(RA.KD.nbrs))]
+new.RA.KD.focal.cut <- filter.rows(new.RA.KD.focal.df[,1:18], 0.000001, z)
+new.RA.KD.focal.cut <- new.RA.KD.focal.df[-c(new.RA.KD.focal.cut),]
+
+new.RA.AW.focal.df <- new.RA.focal.df[,c(as.character(RA.AW.nbrs))]
+new.RA.AW.focal.cut <- filter.rows(new.RA.AW.focal.df[,1:20], 0.000001, z)
+new.RA.AW.focal.cut <- new.RA.AW.focal.df[-c(new.RA.AW.focal.cut),]
+
+new.RA.AD.focal.df <- new.RA.focal.df[,c(as.character(RA.AD.nbrs))]
+new.RA.AD.focal.cut <- filter.rows(new.RA.AD.focal.df[,1:13], 0.000001, z)
+new.RA.AD.focal.cut <- new.RA.AD.focal.df[-c(new.RA.AD.focal.cut),]
+
+new.RA.BW.focal.df <- new.RA.focal.df[,c(as.character(RA.BW.nbrs))]
+
+new.RA.BD.focal.df <- new.RA.focal.df[,c(as.character(RA.BD.nbrs))]
+#####
+
+# occurrence calculations for focal species
+#####
+HR.KW.wPOO <- FOO.function(HR.KW.focal.df)
+HR.KD.wPOO <- POO.function(HR.KD.focal.df)
+HR.AW.wPOO <- FOO.function(HR.AW.focal.df)
+HR.AD.wPOO <- POO.function(HR.AD.focal.df)
+
+RA.KW.wPOO <- FOO.function(RA.KW.focal.df)
+RA.KD.wPOO <- POO.function(RA.KD.focal.df)
+RA.AW.wPOO <- FOO.function(RA.AW.focal.df)
+RA.AD.wPOO <- POO.function(RA.AD.focal.df)
+
+# relative read abundance
+# function for calculating RRA
+#####
+RRA.function <- function(df) {
+  sum.read.counts <- c()
+  
+  for (row in 1:nrow(df)) {
+    total.read.counts <- c()
+    
+    for (col in 1:ncol(df)) {
+      
+      total.read.counts <- append(total.read.counts, as.numeric(df[row,col]/sum(df[,col])))
+    }
+    sum.read.counts <- append(sum.read.counts, sum(total.read.counts))
+  }
+  return(sum.read.counts)
+}
+#####
+
+HR.sum.read.counts <- RRA.function(new.HR.KW.focal.df)
+HR.KW.RRA <- (HR.sum.read.counts/length(ncol(new.HR.KW.focal.df)))*100
+HR.sum.read.counts <- RRA.function(new.HR.KD.focal.df)
+HR.KD.RRA <- (HR.sum.read.counts/length(ncol(new.HR.KD.focal.df)))*100
+HR.sum.read.counts <- RRA.function(new.HR.AW.focal.df)
+HR.AW.RRA <- (HR.sum.read.counts/length(ncol(new.HR.AW.focal.df)))*100
+HR.sum.read.counts <- RRA.function(new.HR.AD.focal.df)
+HR.AD.RRA <- (HR.sum.read.counts/length(ncol(new.HR.AD.focal.df)))*100
+
+RA.sum.read.counts <- RRA.function(new.RA.KW.focal.df)
+RA.KW.RRA <- (RA.sum.read.counts/length(ncol(new.RA.KW.focal.df)))*100
+RA.sum.read.counts <- RRA.function(new.RA.KD.focal.df)
+RA.KD.RRA <- (RA.sum.read.counts/length(ncol(new.RA.KD.focal.df)))*100
+RA.sum.read.counts <- RRA.function(new.RA.AW.focal.df)
+RA.AW.RRA <- (RA.sum.read.counts/length(ncol(new.RA.AW.focal.df)))*100
+RA.sum.read.counts <- RRA.function(new.RA.AD.focal.df)
+RA.AD.RRA <- (RA.sum.read.counts/length(ncol(new.RA.AD.focal.df)))*100
+
+insect.data.order <- insect.data[,c(1,271:274)]
+
+HR.KW.focal.df <- cbind(HR.KW.focal.df, insect.data.order)
+HR.KW.focal.df <- cbind(HR.KW.focal.df, data.frame(HR.KW.wPOO, HR.KW.RRA))
+colnames(HR.KW.focal.df) <- c(HR.KW.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+HR.KD.focal.df <- cbind(HR.KD.focal.df, insect.data.order)
+HR.KD.focal.df <- cbind(HR.KD.focal.df, data.frame(HR.KD.wPOO, HR.KD.RRA))
+colnames(HR.KD.focal.df) <- c(HR.KD.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+HR.AW.focal.df <- cbind(HR.AW.focal.df, insect.data.order)
+HR.AW.focal.df <- cbind(HR.AW.focal.df, data.frame(HR.AW.wPOO, HR.AW.RRA))
+colnames(HR.AW.focal.df) <- c(HR.AW.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+HR.AD.focal.df <- cbind(HR.AD.focal.df, insect.data.order)
+HR.AD.focal.df <- cbind(HR.AD.focal.df, data.frame(HR.AD.wPOO, HR.AD.RRA))
+colnames(HR.AD.focal.df) <- c(HR.AD.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+RA.KW.focal.df <- cbind(RA.KW.focal.df, insect.data.order)
+RA.KW.focal.df <- cbind(RA.KW.focal.df, data.frame(RA.KW.wPOO, RA.KW.RRA))
+colnames(RA.KW.focal.df) <- c(RA.KW.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+RA.KD.focal.df <- cbind(RA.KD.focal.df, insect.data.order)
+RA.KD.focal.df <- cbind(RA.KD.focal.df, data.frame(RA.KD.wPOO, RA.KD.RRA))
+colnames(RA.KD.focal.df) <- c(RA.KD.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+RA.AW.focal.df <- cbind(RA.AW.focal.df, insect.data.order)
+RA.AW.focal.df <- cbind(RA.AW.focal.df, data.frame(RA.AW.wPOO, RA.AW.RRA))
+colnames(RA.AW.focal.df) <- c(RA.AW.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+RA.AD.focal.df <- cbind(RA.AD.focal.df, insect.data.order)
+RA.AD.focal.df <- cbind(RA.AD.focal.df, data.frame(RA.AD.wPOO, RA.AD.RRA))
+colnames(RA.AD.focal.df) <- c(RA.AD.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+new.HR.KW.focal.df <- cbind(new.HR.KW.focal.df, insect.data.order)
+new.HR.KW.focal.df <- cbind(new.HR.KW.focal.df, data.frame(HR.KW.wPOO, HR.KW.RRA))
+colnames(new.HR.KW.focal.df) <- c(HR.KW.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+new.HR.KD.focal.df <- cbind(new.HR.KD.focal.df, insect.data.order)
+new.HR.KD.focal.df <- cbind(new.HR.KD.focal.df, data.frame(HR.KD.wPOO, HR.KD.RRA))
+colnames(new.HR.KD.focal.df) <- c(HR.KD.nbrs, "OTU", "order", "family", "genus", "species",
+                                  "wPOO", "RRA")
+
+new.HR.AW.focal.df <- cbind(new.HR.AW.focal.df, insect.data.order)
+new.HR.AW.focal.df <- cbind(new.HR.AW.focal.df, data.frame(HR.AW.wPOO, HR.AW.RRA))
+colnames(new.HR.AW.focal.df) <- c(HR.AW.nbrs, "OTU", "order", "family", "genus", "species",
+                                  "wPOO", "RRA")
+
+new.HR.AD.focal.df <- cbind(new.HR.AD.focal.df, insect.data.order)
+new.HR.AD.focal.df <- cbind(new.HR.AD.focal.df, data.frame(HR.AD.wPOO, HR.AD.RRA))
+colnames(new.HR.AD.focal.df) <- c(HR.AD.nbrs, "OTU", "order", "family", "genus", "species",
+                                  "wPOO", "RRA")
+
+new.RA.KW.focal.df <- cbind(new.RA.KW.focal.df, insect.data.order)
+new.RA.KW.focal.df <- cbind(new.RA.KW.focal.df, data.frame(RA.KW.wPOO, RA.KW.RRA))
+colnames(new.RA.KW.focal.df) <- c(RA.KW.nbrs, "OTU", "order", "family", "genus", "species",
+                                  "wPOO", "RRA")
+
+new.RA.KD.focal.df <- cbind(new.RA.KD.focal.df, insect.data.order)
+new.RA.KD.focal.df <- cbind(new.RA.KD.focal.df, data.frame(RA.KD.wPOO, RA.KD.RRA))
+colnames(new.RA.KD.focal.df) <- c(RA.KD.nbrs, "OTU", "order", "family", "genus", "species",
+                                  "wPOO", "RRA")
+
+new.RA.AW.focal.df <- cbind(new.RA.AW.focal.df, insect.data.order)
+new.RA.AW.focal.df <- cbind(new.RA.AW.focal.df, data.frame(RA.AW.wPOO, RA.AW.RRA))
+colnames(new.RA.AW.focal.df) <- c(RA.AW.nbrs, "OTU", "order", "family", "genus", "species",
+                                  "wPOO", "RRA")
+
+new.RA.AD.focal.df <- cbind(new.RA.AD.focal.df, insect.data.order)
+new.RA.AD.focal.df <- cbind(new.RA.AD.focal.df, data.frame(RA.AD.wPOO, RA.AD.RRA))
+colnames(new.RA.AD.focal.df) <- c(RA.AD.nbrs, "OTU", "order", "family", "genus", "species",
+                                  "wPOO", "RRA")
 
 # function to count OTUs per sample
 #####
@@ -1063,65 +953,6 @@ focal.compare.OTUs.boxplot <- ggplot(focal.compare.OTUs.df, aes(x = Species, y =
 
 wilcox.test(HR.count.OTUs, RA.count.OTUs)
 shapiro.test(focal.compare.OTUs.df$Counts)
-#####
-
-# compare average number of OTUs between focal species in each location
-#####
-HR.count.OTUs <- count.OTUs(HR.wet.focal.df[,1:27])
-RA.count.OTUs <- count.OTUs(RA.wet.focal.df[,1:50])
-
-focal.compare.OTUs.df <- data.frame(Species = c(rep("H.ruber", times = length(HR.count.OTUs)),
-                                                rep("R.alcyone", times = length(RA.count.OTUs))),
-                                    Counts = c(HR.count.OTUs, RA.count.OTUs))
-
-focal.compare.OTUs.boxplot <- ggplot(focal.compare.OTUs.df, aes(x = Species, y = Counts, fill = Species)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 10),
-                                                axis.title.x = element_text(size = 10),
-                                                axis.text.y = element_text(size = 10)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Species", y = "Number of OTUs")
-
-wilcox.test(HR.count.OTUs, RA.count.OTUs)
-shapiro.test(focal.compare.OTUs.df$Counts)
-#####
-
-# bootstrapping function to test for differences between medians (non-parametric test)
-#####
-library(boot)
-med.diff <- function(a,b) {                         
-  df <- a[b,]                                    
-  median(df$Count[df$Species=="H.ruber"]) -  
-    median(df$Count[df$Species=="R.alcyone"])
-}
-
-boot.out <- boot(data = focal.compare.OTUs.df, statistic = med.diff, R = 500)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-#####
-
-# filter for OTUs assigned to taxonimic order
-#####
-HR.na <- which(HR.focal.df$order=="NA", arr.ind = TRUE)      
-HR.focal.df <- HR.focal.df[-c(HR.na),]
-
-RA.na <- which(RA.focal.df$order=="NA", arr.ind = TRUE)      
-RA.focal.df <- RA.focal.df[-c(RA.na),]
-
-(length(which(HR.focal.df$order=="Lepidoptera"))/length(HR.focal.df$order))*100
-(length(which(RA.focal.df$order=="Lepidoptera"))/length(RA.focal.df$order))*100
-
-#####
-
-# filter for OTUs assigned to taxonomic family
-#####
-HR.na <- which(HR.focal.df$family=="NA", arr.ind = TRUE)      
-HR.focal.df <- HR.focal.df[-c(HR.na),]
-                                                                               
-RA.na <- which(RA.focal.df$family=="NA", arr.ind = TRUE)      
-RA.focal.df <- RA.focal.df[-c(RA.na),]
 #####
 
 # diet composition - most common order
@@ -1174,7 +1005,7 @@ RA.Bokito.Lepidoptera <- RA.Bokito.focal.df[RA.Bokito.focal.df$order=="Lepidopte
 RA.Bokito.Lepidoptera.fam <- unique(RA.Bokito.Lepidoptera$family)
 
 RA.Lepidopteran.location.fam <- list(Wet = RA.wet.Lepidoptera.fam,
-                                  Dry = RA.dry.Lepidoptera.fam)
+                                     Dry = RA.dry.Lepidoptera.fam)
 
 group.venn(RA.Lepidopteran.location.fam, label=FALSE,  lab.cex=1, cex = 1.5,
            cat.cex = 1.5, cat.dist = 0.05, cat.pos = c(320, 400))
@@ -1186,11 +1017,11 @@ group.venn(RA.Lepidopteran.location.fam, label=FALSE,  lab.cex=1, cex = 1.5,
 library(vegan)
 Shannon.index.function <- function(df) {                                 
   Shannon.index <- c()                                                   
-                                                                            
- for (col in 1:ncol(df)) {                                               
-   Shannon.index <- append(Shannon.index, diversity(df[,col], "shannon"))
- }                                                                       
-     return(Shannon.index)                                                  
+  
+  for (col in 1:ncol(df)) {                                               
+    Shannon.index <- append(Shannon.index, diversity(df[,col], "shannon"))
+  }                                                                       
+  return(Shannon.index)                                                  
 } 
 #####
 
@@ -1201,219 +1032,6 @@ HR.Shannon.index <- Shannon.index.function(new.HR.focal.df[,1:79])
 RA.Shannon.index <- Shannon.index.function(new.RA.focal.df[,1:82])
 
 shapiro.test(c(HR.Shannon.index, RA.Shannon.index))
-
-focal.compare.Shannon <- data.frame(Species = c(rep("H.ruber", times = length(HR.Shannon.index)),
-                                                rep("R.alcyone", times = length(RA.Shannon.index))),
-                                    Count = c(HR.Shannon.index, RA.Shannon.index))
-
-focal.compare.Shannon.boxplot <- ggplot(focal.compare.Shannon, aes(x = Species, y = Count, fill = Species)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                axis.title.x = element_text(size = 14),
-                                                axis.text.y = element_text(size = 12),
-                                                axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Species", y = "Shannon index") 
-
-
-wilcox.test(HR.Shannon.index, RA.Shannon.index)
-boot.out <- boot(data = focal.compare.Shannon, statistic = med.diff, R = 1000)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-
-# Shannon index for each location
-#####
-HR.Konye.Shannon.index <- Shannon.index.function(HR.Konye.focal.df[,1:37])
-HR.Ayos.Shannon.index <- Shannon.index.function(HR.Ayos.focal.df[,1:35])
-HR.Bokito.Shannon.index <- Shannon.index.function(HR.Bokito.focal.df[,1:7])
-
-RA.Konye.Shannon.index <- Shannon.index.function(RA.Konye.focal.df[,1:47])
-RA.Ayos.Shannon.index <- Shannon.index.function(RA.Ayos.focal.df[,1:33])
-RA.Bokito.Shannon.index <- Shannon.index.function(RA.Bokito.focal.df[,1:2])
-
-locations.compare.Shannon <- data.frame(Species = c(rep("H.ruber", times = length(c(HR.Konye.Shannon.index, HR.Ayos.Shannon.index, HR.Bokito.Shannon.index))),
-                                                       rep("R.alcyone", times = length(c(RA.Konye.Shannon.index, RA.Ayos.Shannon.index, RA.Bokito.Shannon.index)))),
-                                           Location = c(rep("Konye", times = length(HR.Konye.Shannon.index)),
-                                                        rep("Ayos", times = length(HR.Ayos.Shannon.index)),
-                                                        rep("Bokito", times = length(HR.Bokito.Shannon.index)),
-                                                        rep("Konye", times = length(RA.Konye.Shannon.index)),
-                                                        rep("Ayos", times = length(RA.Ayos.Shannon.index)),
-                                                        rep("Bokito", times = length(RA.Bokito.Shannon.index))),
-                                           Shannon.index = c(HR.Konye.Shannon.index, HR.Ayos.Shannon.index, HR.Bokito.Shannon.index,
-                                                             RA.Konye.Shannon.index, RA.Ayos.Shannon.index, RA.Bokito.Shannon.index))
-
-location.compare.Shannon.boxplot <- ggplot(locations.compare.Shannon, aes(x = Location, y = Shannon.index, fill = Location)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 14),
-                                                axis.title.x = element_text(size = 14),
-                                                axis.text.y = element_text(size = 12),
-                                                axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Species", y = "Shannon index") + facet_wrap(vars(Species))   
-
-
-HR.Shannon <- locations.compare.Shannon[locations.compare.Shannon$Species=="H.ruber",]
-RA.Shannon <- locations.compare.Shannon[locations.compare.Shannon$Species=="R.alcyone",]
-
-wilcox.test(HR.Shannon$Shannon.index, RA.Shannon$Shannon.index)
-
-Shannon.kruskal <- kruskal.test(data = locations.compare.Shannon, x = locations.compare.Shannon$Shannon.index,
-             g = locations.compare.Shannon$Location, formula = Shannon.index ~ Location)
-
-
-
-med.diff <- function(d, i) {                         
-  df.shannon <- d[i,]                                    
-  median(df.shannon$Shannon.index[df.shannon$Species=="H.ruber"]) -  
-    median(df.shannon$Shannon.index[df.shannon$Species=="R.alcyone"])
-}
-
-boot.out <- boot(data = locations.compare.Shannon[,-2], 
-                 statistic = med.diff, R = 500)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-
-# repeat for RRA data
-new.HR.Konye.Shannon.index <- Shannon.index.function(new.HR.Konye.focal.df[,1:37])
-new.HR.Ayos.Shannon.index <- Shannon.index.function(new.HR.Ayos.focal.df[,1:35])
-new.HR.Bokito.Shannon.index <- Shannon.index.function(new.HR.Bokito.focal.df[,1:7])
-
-new.RA.Konye.Shannon.index <- Shannon.index.function(new.RA.Konye.focal.df[,1:47])
-new.RA.Ayos.Shannon.index <- Shannon.index.function(new.RA.Ayos.focal.df[,1:33])
-new.RA.Bokito.Shannon.index <- Shannon.index.function(new.RA.Bokito.focal.df[,1:2])
-
-locations.compare.Shannon <- data.frame(Species = c(rep("H.ruber", times = length(c(new.HR.Konye.Shannon.index, new.HR.Ayos.Shannon.index, new.HR.Bokito.Shannon.index))),
-                                                    rep("R.alcyone", times = length(c(new.RA.Konye.Shannon.index, new.RA.Ayos.Shannon.index, new.RA.Bokito.Shannon.index)))),
-                                        Location = c(rep("Konye", times = length(new.HR.Konye.Shannon.index)),
-                                                     rep("Ayos", times = length(new.HR.Ayos.Shannon.index)),
-                                                     rep("Bokito", times = length(new.HR.Bokito.Shannon.index)),
-                                                     rep("Konye", times = length(new.RA.Konye.Shannon.index)),
-                                                     rep("Ayos", times = length(new.RA.Ayos.Shannon.index)),
-                                                     rep("Bokito", times = length(new.RA.Bokito.Shannon.index))),
-                                        Shannon.index = c(new.HR.Konye.Shannon.index, new.HR.Ayos.Shannon.index, new.HR.Bokito.Shannon.index,
-                                                          new.RA.Konye.Shannon.index, new.RA.Ayos.Shannon.index, new.RA.Bokito.Shannon.index))
-
-location.compare.Shannon.boxplot <- ggplot(locations.compare.Shannon, aes(x = Location, y = Shannon.index, fill = Location)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 14),
-                                                axis.title.x = element_text(size = 14),
-                                                axis.text.y = element_text(size = 12),
-                                                axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Species", y = "Shannon index") + facet_wrap(vars(Species))   
-
-
-HR.Shannon <- locations.compare.Shannon[locations.compare.Shannon$Species=="H.ruber",]
-RA.Shannon <- locations.compare.Shannon[locations.compare.Shannon$Species=="R.alcyone",]
-
-wilcox.test(HR.Shannon$Shannon.index, RA.Shannon$Shannon.index)
-
-Shannon.kruskal <- kruskal.test(data = locations.compare.Shannon, x = locations.compare.Shannon$Shannon.index,
-                                g = locations.compare.Shannon$Location, formula = Shannon.index ~ Location)
-
-
-
-med.diff <- function(d, i) {                         
-  df.shannon <- d[i,]                                    
-  median(df.shannon$Shannon.index[df.shannon$Species=="H.ruber"]) -  
-    median(df.shannon$Shannon.index[df.shannon$Species=="R.alcyone"])
-}
-
-boot.out <- boot(data = locations.compare.Shannon[,-2], 
-                 statistic = med.diff, R = 500)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-
-#####
-
-# Shannon index for each seasons
-#####
-HR.wet.Shannon.index <- Shannon.index.function(HR.wet.focal.df[,1:27])
-HR.dry.Shannon.index <- Shannon.index.function(HR.dry.focal.df[,1:52])
-
-RA.wet.Shannon.index <- Shannon.index.function(RA.wet.focal.df[,1:50])
-RA.dry.Shannon.index <- Shannon.index.function(RA.dry.focal.df[,1:32])
-
-seasons.compare.Shannon <- data.frame(Species = c(rep("H.ruber", times = length(c(HR.wet.Shannon.index, HR.dry.Shannon.index))),
-                                                    rep("R.alcyone", times = length(c(RA.wet.Shannon.index, RA.dry.Shannon.index)))),
-                                        Season = c(rep("Wet", times = length(HR.wet.Shannon.index)),
-                                                     rep("Dry", times = length(HR.dry.Shannon.index)),
-                                                     rep("Wet", times = length(RA.wet.Shannon.index)),
-                                                     rep("Dry", times = length(RA.dry.Shannon.index))),
-                                        Shannon.index = c(HR.wet.Shannon.index, HR.dry.Shannon.index, 
-                                                          RA.wet.Shannon.index, RA.dry.Shannon.index))
-
-seasons.compare.Shannon.boxplot <- ggplot(seasons.compare.Shannon, aes(x = Season, y = Shannon.index, fill = Season)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 14),
-                                                axis.title.x = element_text(size = 14),
-                                                axis.text.y = element_text(size = 12),
-                                                axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Species", y = "Shannon index") + facet_wrap(vars(Species))   
-
-
-wet.Shannon <- seasons.compare.Shannon[seasons.compare.Shannon$Season=="Wet",]
-dry.Shannon <- seasons.compare.Shannon[seasons.compare.Shannon$Season=="Dry",]
-
-Shannon.wilcox <- wilcox.test(wet.Shannon$Shannon.index, dry.Shannon$Shannon.index)
-
-boot.out <- boot(data = seasons.compare.Shannon[,-2], 
-                 statistic = med.diff, R = 500)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-
-# repeat for RRA data
-new.HR.wet.Shannon.index <- Shannon.index.function(new.HR.wet.focal.df[,1:27])
-new.HR.dry.Shannon.index <- Shannon.index.function(new.HR.dry.focal.df[,1:52])
-
-new.RA.wet.Shannon.index <- Shannon.index.function(new.RA.wet.focal.df[,1:50])
-new.RA.dry.Shannon.index <- Shannon.index.function(new.RA.dry.focal.df[,1:32])
-
-seasons.compare.Shannon <- data.frame(Species = c(rep("H.ruber", times = length(c(HR.wet.Shannon.index, HR.dry.Shannon.index))),
-                                                  rep("R.alcyone", times = length(c(RA.wet.Shannon.index, RA.dry.Shannon.index)))),
-                                      Season = c(rep("Wet", times = length(HR.wet.Shannon.index)),
-                                                 rep("Dry", times = length(HR.dry.Shannon.index)),
-                                                 rep("Wet", times = length(RA.wet.Shannon.index)),
-                                                 rep("Dry", times = length(RA.dry.Shannon.index))),
-                                      Shannon.index = c(new.HR.wet.Shannon.index, new.HR.dry.Shannon.index, 
-                                                        new.RA.wet.Shannon.index, new.RA.dry.Shannon.index))
-
-seasons.compare.Shannon.boxplot <- ggplot(seasons.compare.Shannon, aes(x = Season, y = Shannon.index, fill = Season)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 14),
-                                                axis.title.x = element_text(size = 14),
-                                                axis.text.y = element_text(size = 12),
-                                                axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Species", y = "Shannon index") + facet_wrap(vars(Species))   
-
-
-wet.Shannon <- seasons.compare.Shannon[seasons.compare.Shannon$Season=="Wet",]
-dry.Shannon <- seasons.compare.Shannon[seasons.compare.Shannon$Season=="Dry",]
-
-Shannon.wilcox <- wilcox.test(wet.Shannon$Shannon.index, dry.Shannon$Shannon.index)
-
-boot.out <- boot(data = seasons.compare.Shannon[,-2], 
-                 statistic = med.diff, R = 500)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-
-#####
 
 # Shannon for each location-season
 #####
@@ -1446,17 +1064,17 @@ new.RA.BW.Shannon.index <- diversity(new.RA.BW.focal.df[,1], "shannon")
 new.RA.BD.Shannon.index <- diversity(new.RA.BD.focal.df[,1], "shannon")
 
 HR.compare.Shannon <- data.frame(Species = rep("H.ruber", times = length(c(HR.KW.Shannon.index, HR.KD.Shannon.index,
-                                                                                HR.AW.Shannon.index, HR.AD.Shannon.index,
-                                                                                HR.BW.Shannon.index, HR.BD.Shannon.index))),
-                                      LS = c(rep("Konye - wet", times = length(new.HR.KW.Shannon.index)),
-                                             rep("Konye - dry", times = length(new.HR.KD.Shannon.index)),
-                                             rep("Ayos - wet", times = length(new.HR.AW.Shannon.index)),
-                                             rep("Ayos - dry", times = length(new.HR.AD.Shannon.index)),
-                                             rep("Bokito - wet", times = length(new.HR.BW.Shannon.index)),
-                                             rep("Bokito - dry", times = length(new.HR.BD.Shannon.index))),
-                                      Shannon.index = c(HR.KW.Shannon.index, HR.KD.Shannon.index, 
-                                                        HR.AW.Shannon.index, HR.AD.Shannon.index,
-                                                        HR.BW.Shannon.index, HR.BD.Shannon.index))
+                                                                           HR.AW.Shannon.index, HR.AD.Shannon.index,
+                                                                           HR.BW.Shannon.index, HR.BD.Shannon.index))),
+                                 LS = c(rep("Konye - wet", times = length(new.HR.KW.Shannon.index)),
+                                        rep("Konye - dry", times = length(new.HR.KD.Shannon.index)),
+                                        rep("Ayos - wet", times = length(new.HR.AW.Shannon.index)),
+                                        rep("Ayos - dry", times = length(new.HR.AD.Shannon.index)),
+                                        rep("Bokito - wet", times = length(new.HR.BW.Shannon.index)),
+                                        rep("Bokito - dry", times = length(new.HR.BD.Shannon.index))),
+                                 Shannon.index = c(new.HR.KW.Shannon.index, new.HR.KD.Shannon.index, 
+                                                   new.HR.AW.Shannon.index, new.HR.AD.Shannon.index,
+                                                   new.HR.BW.Shannon.index, new.HR.BD.Shannon.index))
 
 HR.compare.Shannon.boxplot <- ggplot(HR.compare.Shannon, aes(x = LS, y = Shannon.index, fill = LS)) +
   geom_boxplot(show.legend = FALSE) + theme_classic() +
@@ -1477,17 +1095,17 @@ HR.compare.Shannon.boxplot + annotate("text",
                                       vjust = - 1)
 
 RA.compare.Shannon <- data.frame(Species = rep("H.ruber", times = length(c(RA.KW.Shannon.index, RA.KD.Shannon.index,
-                                                                                   RA.AW.Shannon.index, RA.AD.Shannon.index,
-                                                                                   RA.BW.Shannon.index, RA.BD.Shannon.index))),
-                                         LS = c(rep("Konye - wet", times = length(RA.KW.Shannon.index)),
-                                                rep("Konye - dry", times = length(RA.KD.Shannon.index)),
-                                                rep("Ayos - wet", times = length(RA.AW.Shannon.index)),
-                                                rep("Ayos - dry", times = length(RA.AD.Shannon.index)),
-                                                rep("Bokito - wet", times = length(RA.BW.Shannon.index)),
-                                                rep("Bokito - dry", times = length(RA.BD.Shannon.index))),
-                                         Shannon.index = c(RA.KW.Shannon.index, RA.KD.Shannon.index, 
-                                                           RA.AW.Shannon.index, RA.AD.Shannon.index,
-                                                           RA.BW.Shannon.index, RA.BD.Shannon.index))
+                                                                           RA.AW.Shannon.index, RA.AD.Shannon.index,
+                                                                           RA.BW.Shannon.index, RA.BD.Shannon.index))),
+                                 LS = c(rep("Konye - wet", times = length(RA.KW.Shannon.index)),
+                                        rep("Konye - dry", times = length(RA.KD.Shannon.index)),
+                                        rep("Ayos - wet", times = length(RA.AW.Shannon.index)),
+                                        rep("Ayos - dry", times = length(RA.AD.Shannon.index)),
+                                        rep("Bokito - wet", times = length(RA.BW.Shannon.index)),
+                                        rep("Bokito - dry", times = length(RA.BD.Shannon.index))),
+                                 Shannon.index = c(RA.KW.Shannon.index, RA.KD.Shannon.index, 
+                                                   RA.AW.Shannon.index, RA.AD.Shannon.index,
+                                                   RA.BW.Shannon.index, RA.BD.Shannon.index))
 
 RA.compare.Shannon.boxplot <- ggplot(RA.compare.Shannon, aes(x = LS, y = Shannon.index, fill = LS)) +
   geom_boxplot(show.legend = FALSE) + theme_classic() +
@@ -1501,12 +1119,11 @@ RA.compare.Shannon.boxplot <- ggplot(RA.compare.Shannon, aes(x = LS, y = Shannon
   labs(x = "Location - Season", y = "Shannon index") + ylim(0, 5.2)
 
 RA.compare.Shannon.boxplot + annotate("text",
-           x = 1:length(table(RA.compare.Shannon$LS)),
-           y = rep(4.8, times = 6),
-           label = table(RA.compare.Shannon$LS),
-           col = "red",
-           vjust = - 1)
-
+                                      x = 1:length(table(RA.compare.Shannon$LS)),
+                                      y = rep(4.8, times = 6),
+                                      label = table(RA.compare.Shannon$LS),
+                                      col = "red",
+                                      vjust = - 1)
 #####
 
 # Niche breadth
@@ -1536,6 +1153,7 @@ Levins.function <- function(df) {
               SD.Levins = sd(Levins.std)))
 }
 #####
+
 HR.Levins.index <- Levins.function(HR.focal.df[,1:79])
 RA.Levins.index <- Levins.function(RA.focal.df[,1:82])
 
@@ -1547,154 +1165,47 @@ median(boot.out$t)
 
 boot.ci(boot.out, type = "perc")
 
-HR.Konye.Levins <- Levins.function(HR.Konye.focal.df[,1:37])
-HR.Ayos.Levins <- Levins.function(HR.Ayos.focal.df[,1:35])
-HR.Bokito.Levins <- Levins.function(HR.Bokito.focal.df[,1:7])
-
-RA.Konye.Levins <- Levins.function(RA.Konye.focal.df[,1:47])
-RA.Ayos.Levins <- Levins.function(RA.Ayos.focal.df[,1:33])
-RA.Bokito.Levins <- Levins.function(RA.Bokito.focal.df[,1:2])
-
-HR.wet.Levins <- Levins.function(HR.wet.focal.df[,1:27])
-HR.dry.Levins <- Levins.function(HR.dry.focal.df[,1:52])
-
-RA.wet.focal.df <- RA.wet.focal.df[,-20] # no occurrences in this column
-RA.dry.focal.df <- RA.dry.focal.df[,-13] # no occurrences in this column
-RA.wet.Levins <- Levins.function(RA.wet.focal.df[,1:49])
-RA.dry.Levins <- Levins.function(RA.dry.focal.df[,1:31])
-
-
-# Levin's index for each location
-#####
-locations.compare.Levin <- data.frame(Species = c(rep("H.ruber", times = length(c(HR.Konye.Levins$All.Levins, HR.Ayos.Levins$All.Levins, HR.Bokito.Levins$All.Levins))),
-                                                  rep("R.alcyone", times = length(c(RA.Konye.Levins$All.Levins, RA.Ayos.Levins$All.Levins, RA.Bokito.Levins$All.Levins)))),
-                                      Location = c(rep("Konye", times = length(HR.Konye.Levins$All.Levins)),
-                                                 rep("Ayos", times = length(HR.Ayos.Levins$All.Levins)),
-                                                 rep("Bokito", times = length(HR.Bokito.Levins$All.Levins)),
-                                                 rep("Konye", times = length(RA.Konye.Levins$All.Levins)),
-                                                 rep("Ayos", times = length(RA.Ayos.Levins$All.Levins)),
-                                                 rep("Bokito", times = length(RA.Bokito.Levins$All.Levins))),
-                                      Levins = c(HR.Konye.Levins$All.Levins.std, HR.Ayos.Levins$All.Levins.std, HR.Bokito.Levins$All.Levins.std, 
-                                                      RA.Konye.Levins$All.Levins.std, RA.Ayos.Levins$All.Levins.std, RA.Bokito.Levins$All.Levins.std))
-
-y_expression <- expression("Levin's index" ~ "" ~(B[A]))
-
-library(ggpubr)
-locations.compare.Levin.boxplot <- ggplot(locations.compare.Levin, aes(x = Location, y = Levins, fill = Location)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 14),
-                                                axis.title.x = element_text(size = 14),
-                                                axis.text.y = element_text(size = 12),
-                                                axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Location", y = y_expression) + facet_wrap(vars(Species)) 
-
-shapiro.test(locations.compare.Levin$Levins)
-HR.Levins <- locations.compare.Levin[locations.compare.Levin$Species=="H.ruber",]
-RA.Levins <- locations.compare.Levin[locations.compare.Levin$Species=="R.alcyone",]
-
-Levins.kruskal <- kruskal.test(data = locations.compare.Levin, x = locations.compare.Levin$Levins,
-                                g = locations.compare.Levin$Location, formula = Levins ~ Location)
-
-library(FSA)
-dunnTest(Levins ~ Location, data = locations.compare.Levin, method = "bonferroni")
-
-location.Levins <- locations.compare.Levin[locations.compare.Levin$Location=="Bokito",]
-
-wilcox.test(HR.Levins$Levins, RA.Levins$Levins)
-
-med.diff <- function(d, i) {                         
-  df.levins <- d[i,]                                    
-  median(df.levins$Levins[df.levins$Species=="H.ruber"]) -  
-    median(df.levins$Levins[df.levins$Species=="R.alcyone"])
-}
-
-boot.out <- boot(data = location.Levins[,-2], 
-                 statistic = med.diff, R = 500)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-#####
-
-# Levin's index for each season
-#####
-seasons.compare.Levin <- data.frame(Species = c(rep("H.ruber", times = length(c(HR.wet.Levins$All.Levins, HR.dry.Levins$All.Levins))),
-                                                  rep("R.alcyone", times = length(c(RA.wet.Levins$All.Levins, RA.dry.Levins$All.Levins)))),
-                                      Season = c(rep("Wet", times = length(HR.wet.Levins$All.Levins)),
-                                                   rep("Dry", times = length(HR.dry.Levins$All.Levins)),
-                                                   rep("Wet", times = length(RA.wet.Levins$All.Levins)),
-                                                   rep("Dry", times = length(RA.dry.Levins$All.Levins))),
-                                      Levins = c(HR.wet.Levins$All.Levins.std, HR.dry.Levins$All.Levins.std, 
-                                                 RA.wet.Levins$All.Levins.std, RA.dry.Levins$All.Levins.std))
-
-seasons.compare.Levin.boxplot <- ggplot(seasons.compare.Levin, aes(x = Season, y = Levins, fill = Season)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 14),
-                                                axis.title.x = element_text(size = 14),
-                                                axis.text.y = element_text(size = 12),
-                                                axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Season", y = y_expression) + facet_wrap(vars(Species)) 
-
-shapiro.test(seasons.compare.Levin$Levins)
-
-wet.Levins <- seasons.compare.Levin[seasons.compare.Levin$Season=="Wet",]
-dry.Levins <- seasons.compare.Levin[seasons.compare.Levin$Season=="Dry",]
-
-Levins.wilcox <- wilcox.test(wet.Levins$Levins, dry.Levins$Levins)
-
-boot.out <- boot(data = dry.Levins[,-2], 
-                 statistic = med.diff, R = 500)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-#####
-
 # Levins for each location-season
 #####
-HR.KW.Levins.index <- Levins.function(HR.KW.focal.df[,1:13])
-HR.KD.Levins.index <- Levins.function(HR.KD.focal.df[,1:24])
-HR.AW.Levins.index <- Levins.function(HR.AW.focal.df[,1:10])
-HR.AD.Levins.index <- Levins.function(HR.AD.focal.df[,1:25])
-HR.BW.Levins.index <- Levins.function(HR.BW.focal.df[,1:4])
-HR.BD.Levins.index <- Levins.function(HR.BD.focal.df[,1:3])
+HR.KW.Levins.index <- Levins.function(HR.KW.focal.cut[,1:13])
+HR.KD.Levins.index <- Levins.function(HR.KD.focal.cut[,1:24])
+HR.AW.Levins.index <- Levins.function(HR.AW.focal.cut[,1:10])
+HR.AD.Levins.index <- Levins.function(HR.AD.focal.cut[,1:25])
+HR.BW.Levins.index <- Levins.function(HR.BW.focal.cut[,1:4])
+HR.BD.Levins.index <- Levins.function(HR.BD.focal.cut[,1:3])
 
-RA.KW.Levins.index <- Levins.function(RA.KW.focal.df[,1:29])
-RA.KD.Levins.index <- Levins.function(RA.KD.focal.df[,1:18])
-RA.AW.Levins.index <- Levins.function(RA.AW.focal.df[,1:20])
-RA.AD.Levins.index <- Levins.function(RA.AD.focal.df[,1:13])
+RA.KW.Levins.index <- Levins.function(RA.KW.focal.cut[,1:29])
+RA.KD.Levins.index <- Levins.function(RA.KD.focal.cut[,1:18])
+RA.AW.Levins.index <- Levins.function(RA.AW.focal.cut[,1:20])
+RA.AD.Levins.index <- Levins.function(RA.AD.focal.cut[,1:13])
 
 
-new.HR.KW.Levins.index <- Levins.function(new.HR.KW.focal.df[,1:13])
-new.HR.KD.Levins.index <- Levins.function(new.HR.KD.focal.df[,1:24])
-new.HR.AW.Levins.index <- Levins.function(new.HR.AW.focal.df[,1:10])
-new.HR.AD.Levins.index <- Levins.function(new.HR.AD.focal.df[,1:25])
-new.HR.BW.Levins.index <- Levins.function(new.HR.BW.focal.df[,1:4])
-new.HR.BD.Levins.index <- Levins.function(new.HR.BD.focal.df[,1:3])
+new.HR.KW.Levins.index <- Levins.function(new.HR.KW.focal.cut[,1:13])
+new.HR.KD.Levins.index <- Levins.function(new.HR.KD.focal.cut[,1:24])
+new.HR.AW.Levins.index <- Levins.function(new.HR.AW.focal.cut[,1:10])
+new.HR.AD.Levins.index <- Levins.function(new.HR.AD.focal.cut[,1:25])
+new.HR.BW.Levins.index <- Levins.function(new.HR.BW.focal.cut[,1:4])
+new.HR.BD.Levins.index <- Levins.function(new.HR.BD.focal.cut[,1:3])
 
-new.RA.KW.Levins.index <- Levins.function(new.RA.KW.focal.df[,1:29])
-new.RA.KD.Levins.index <- Levins.function(new.RA.KD.focal.df[,1:18])
-new.RA.AW.Levins.index <- Levins.function(new.RA.AW.focal.df[,1:20])
-new.RA.AD.Levins.index <- Levins.function(new.RA.AD.focal.df[,1:13])
+new.RA.KW.Levins.index <- Levins.function(new.RA.KW.focal.cut[,1:29])
+new.RA.KD.Levins.index <- Levins.function(new.RA.KD.focal.cut[,1:18])
+new.RA.AW.Levins.index <- Levins.function(new.RA.AW.focal.cut[,1:20])
+new.RA.AD.Levins.index <- Levins.function(new.RA.AD.focal.cut[,1:13])
 
-RA.compare.Levins <- data.frame(Species = rep("H.ruber", times = length(c(RA.KW.Levins.index$All.Levins.std, RA.KD.Levins.index$All.Levins.std,
-                                                                           RA.AW.Levins.index$All.Levins.std, RA.AD.Levins.index$All.Levins.std))),
-                                                                          # RA.BW.Levins.index$All.Levins.std, RA.BD.Levins.index$All.Levins.std))),
-                                 LS = c(rep("Konye - wet", times = length(RA.KW.Levins.index$All.Levins.std)),
-                                        rep("Konye - dry", times = length(RA.KD.Levins.index$All.Levins.std)),
-                                        rep("Ayos - wet", times = length(RA.AW.Levins.index$All.Levins.std)),
-                                        rep("Ayos - dry", times = length(RA.AD.Levins.index$All.Levins.std))),
-                                       # rep("Bokito - wet", times = length(RA.BW.Levins.index$All.Levins.std)),
-                                        #rep("Bokito - dry", times = length(RA.BD.Levins.index$All.Levins.std))),
-                                 Levins.index = c(new.RA.KW.Levins.index$All.Levins.std, new.RA.KD.Levins.index$All.Levins.std, 
-                                                   new.RA.AW.Levins.index$All.Levins.std, new.RA.AD.Levins.index$All.Levins.std))
-                                                   #RA.BW.Levins.index$All.Levins.std, RA.BD.Levins.index$All.Levins.std))
+HR.compare.Levins <- data.frame(Species = rep("H.ruber", times = length(c(HR.KW.Levins.index$All.Levins.std, HR.KD.Levins.index$All.Levins.std,
+                                                                          HR.AW.Levins.index$All.Levins.std, HR.AD.Levins.index$All.Levins.std,
+                                                                          HR.BW.Levins.index$All.Levins.std, HR.BD.Levins.index$All.Levins.std))),
+                                LS = c(rep("Konye - wet", times = length(HR.KW.Levins.index$All.Levins.std)),
+                                       rep("Konye - dry", times = length(HR.KD.Levins.index$All.Levins.std)),
+                                       rep("Ayos - wet", times = length(HR.AW.Levins.index$All.Levins.std)),
+                                       rep("Ayos - dry", times = length(HR.AD.Levins.index$All.Levins.std)),
+                                       rep("Bokito - wet", times = length(HR.BW.Levins.index$All.Levins.std)),
+                                       rep("Bokito - dry", times = length(HR.BD.Levins.index$All.Levins.std))),
+                                Levins.index = c(new.HR.KW.Levins.index$All.Levins.std, new.HR.KD.Levins.index$All.Levins.std, 
+                                                 new.HR.AW.Levins.index$All.Levins.std, new.HR.AD.Levins.index$All.Levins.std,
+                                                 new.HR.BW.Levins.index$All.Levins.std, new.HR.BD.Levins.index$All.Levins.std))
 
-RA.compare.Levins.boxplot <- ggplot(RA.compare.Levins, aes(x = LS, y = Levins.index, fill = LS)) +
+HR.compare.Levins.boxplot <- ggplot(HR.compare.Levins, aes(x = LS, y = Levins.index, fill = LS)) +
   geom_boxplot(show.legend = FALSE) + theme_classic() +
   scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
                                                 strip.text = element_text(size = 14),
@@ -1703,195 +1214,80 @@ RA.compare.Levins.boxplot <- ggplot(RA.compare.Levins, aes(x = LS, y = Levins.in
                                                 axis.title.y = element_text(size = 14),
                                                 axis.text.x = element_text(size = 12, angle = 90)) +
   stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Location - Season", y = "Levins index") 
+  labs(x = "Location - Season", y = "Levins index") + ylim(0,0.055)
 
-RA.compare.Levins.boxplot + annotate("text",
-                                      x = 1:length(table(RA.compare.Levins$LS)),
-                                      y = rep(0.048, times = 4),
-                                      label = table(RA.compare.Levins$LS),
-                                      col = "red",
-                                      vjust = - 1)
-
-
-# Niche overlap
-# function for calculating Pianka's index
-#####
-Pianka.function <- function(df) {
-  HR.diet.average <- c()
-  for (row in 1:nrow(df)) {
-    all.diets <- c()
-    for (col in 1:ncol(df)) {
-      all.diets <- append(all.diets, df[row,col])
-    }
-    HR.diet.average <- append(HR.diet.average, mean(all.diets))
-  }
-  
-  HR.diet.prop.Konye <- c()
-  for (prop in HR.diet.average) {
-    HR.diet.prop.Konye <- append(HR.diet.prop.Konye, prop/sum(HR.diet.average))
-  }
-  return(HR.diet.prop.Konye)
-}
-#####
-
-HR.Konye.Pianka <- Pianka.function(HR.Konye.focal.df[,1:37])
-HR.Ayos.Pianka <- Pianka.function(HR.Ayos.focal.df[,1:35])
-HR.Bokito.Pianka <- Pianka.function(HR.Bokito.focal.df[,1:7])
-
-RA.Konye.Pianka <- Pianka.function(RA.Konye.focal.df[,1:47])
-RA.Ayos.Pianka <- Pianka.function(RA.Ayos.focal.df[,1:33])
-RA.Bokito.Pianka <- Pianka.function(RA.Bokito.focal.df[,1:2])
-
-HR.wet.Pianka <- Pianka.function(HR.wet.focal.df[,1:27])
-HR.dry.Pianka <- Pianka.function(HR.dry.focal.df[,1:52])
-
-RA.wet.Pianka <- Pianka.function(RA.wet.focal.df[,1:49])
-RA.dry.Pianka <- Pianka.function(RA.dry.focal.df[,1:31])
-
-# Pianka's index for each location
-#####
-locations.compare.Pianka <- data.frame(Species = c(rep("H.ruber", times = length(c(HR.Konye.Pianka, HR.Ayos.Pianka, HR.Bokito.Pianka))),
-                                                  rep("R.alcyone", times = length(c(RA.Konye.Pianka, RA.Ayos.Pianka, RA.Bokito.Pianka)))),
-                                      Location = c(rep("Konye", times = length(HR.Konye.Pianka)),
-                                                   rep("Ayos", times = length(HR.Ayos.Pianka)),
-                                                   rep("Bokito", times = length(HR.Bokito.Pianka)),
-                                                   rep("Konye", times = length(RA.Konye.Pianka)),
-                                                   rep("Ayos", times = length(RA.Ayos.Pianka)),
-                                                   rep("Bokito", times = length(RA.Bokito.Pianka))),
-                                      Pianka = c(HR.Konye.Pianka, HR.Ayos.Pianka, HR.Bokito.Pianka, 
-                                                 RA.Konye.Pianka, RA.Ayos.Pianka, RA.Bokito.Pianka))
-
-y_expression <- expression("Pianka's index" ~ "" ~(O[jk]))
-
-locations.compare.Pianka.boxplot <- ggplot(locations.compare.Pianka, aes(x = Location, y = Pianka, fill = Location)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 12),
-                                                axis.title.x = element_text(size = 12),
-                                                axis.text.y = element_text(size = 10),
-                                                axis.title.y = element_text(size = 12),
-                                                axis.text.x = element_text(size = 10)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Location", y = y_expression) + facet_wrap(vars(Species))
-
-shapiro.test(locations.compare.Pianka$Pianka)
-
-HR.Pianka <- locations.compare.Pianka[locations.compare.Pianka$Species=="H.ruber",]
-RA.Pianka <- locations.compare.Pianka[locations.compare.Pianka$Species=="R.alcyone",]
-
-wilcox.test(HR.Pianka$Pianka, RA.Pianka$Pianka)
-
-Pianka.kruskal <- kruskal.test(data = locations.compare.Pianka, x = locations.compare.Pianka$Pianka,
-                               g = locations.compare.Pianka$Location, formula = Pianka ~ Location)
-
-dunnTest(Pianka ~ Location, data = locations.compare.Pianka, method = "bonferroni")
-
-location.Pianka <- locations.compare.Pianka[locations.compare.Pianka$Location=="Ayos",]
-
-med.diff <- function(d, i) {                         
-  df.Pianka <- d[i,]                                    
-  median(df.Pianka$Pianka[df.Pianka$Species=="H.ruber"]) -  
-    median(df.Pianka$Pianka[df.Pianka$Species=="R.alcyone"])
-}
-
-boot.out <- boot(data = location.Pianka[,-2], 
-                 statistic = med.diff, R = 500)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-#####
-
-# Pianka's index for each season
-#####
-seasons.compare.Pianka <- data.frame(Species = c(rep("H.ruber", times = length(c(HR.wet.Pianka, HR.dry.Pianka))),
-                                                   rep("R.alcyone", times = length(c(RA.wet.Pianka, RA.dry.Pianka)))),
-                                       Season = c(rep("Wet", times = length(HR.wet.Pianka)),
-                                                    rep("Dry", times = length(HR.dry.Pianka)),
-                                                    rep("Wet", times = length(RA.wet.Pianka)),
-                                                    rep("Dry", times = length(RA.dry.Pianka))),
-                                       Pianka = c(HR.wet.Pianka, HR.dry.Pianka, 
-                                                  RA.wet.Pianka, RA.dry.Pianka))
-
-y_expression <- expression("Pianka's index" ~ "" ~(O[jk]))
-
-seasons.compare.Pianka.boxplot <- ggplot(seasons.compare.Pianka, aes(x = Season, y = Pianka, fill = Season)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 12),
-                                                axis.title.x = element_text(size = 12),
-                                                axis.text.y = element_text(size = 10),
-                                                axis.title.y = element_text(size = 12),
-                                                axis.text.x = element_text(size = 10)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Season", y = y_expression) + facet_wrap(vars(Species))
-
-wet.Pianka <- seasons.compare.Pianka[seasons.compare.Pianka$Season=="Wet",]
-dry.Pianka <- seasons.compare.Pianka[seasons.compare.Pianka$Season=="Dry",]
-
-Pianka.wilcox <- wilcox.test(wet.Pianka$Pianka, dry.Pianka$Pianka)
-
-boot.out <- boot(data = dry.Pianka[,-2], 
-                 statistic = med.diff, R = 500)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-#####
-
-HR.KW.Pianka.index <- Pianka.function(HR.KW.focal.df[,1:13])
-HR.KD.Pianka.index <- Pianka.function(HR.KD.focal.df[,1:24])
-HR.AW.Pianka.index <- Pianka.function(HR.AW.focal.df[,1:10])
-HR.AD.Pianka.index <- Pianka.function(HR.AD.focal.df[,1:25])
-HR.BW.Pianka.index <- Pianka.function(HR.BW.focal.df[,1:4])
-HR.BD.Pianka.index <- Pianka.function(HR.BD.focal.df[,1:3])
-
-RA.KW.Pianka.index <- Pianka.function(RA.KW.focal.df[,1:29])
-RA.KD.Pianka.index <- Pianka.function(RA.KD.focal.df[,1:18])
-RA.AW.Pianka.index <- Pianka.function(RA.AW.focal.df[,1:20])
-RA.AD.Pianka.index <- Pianka.function(RA.AD.focal.df[,1:13])
-
-new.HR.KW.Pianka.index <- Pianka.function(new.HR.KW.focal.df[,1:13])
-new.HR.KD.Pianka.index <- Pianka.function(new.HR.KD.focal.df[,1:24])
-new.HR.AW.Pianka.index <- Pianka.function(new.HR.AW.focal.df[,1:10])
-new.HR.AD.Pianka.index <- Pianka.function(new.HR.AD.focal.df[,1:25])
-new.HR.BW.Pianka.index <- Pianka.function(new.HR.BW.focal.df[,1:4])
-new.HR.BD.Pianka.index <- Pianka.function(new.HR.BD.focal.df[,1:3])
-
-new.RA.KW.Pianka.index <- Pianka.function(new.RA.KW.focal.df[,1:29])
-new.RA.KD.Pianka.index <- Pianka.function(new.RA.KD.focal.df[,1:18])
-new.RA.AW.Pianka.index <- Pianka.function(new.RA.AW.focal.df[,1:20])
-new.RA.AD.Pianka.index <- Pianka.function(new.RA.AD.focal.df[,1:13])
-
-HR.compare.Pianka <- data.frame(Species = rep("H.ruber", times = length(c(HR.KW.Pianka.index, HR.KD.Pianka.index,
-                                                                          HR.AW.Pianka.index, HR.AD.Pianka.index,
-                                                                          HR.BW.Pianka.index, HR.BD.Pianka.index))),
-                                LS = c(rep("Konye - wet", times = length(HR.KW.Pianka.index)),
-                                       rep("Konye - dry", times = length(HR.KD.Pianka.index)),
-                                       rep("Ayos - wet", times = length(HR.AW.Pianka.index)),
-                                       rep("Ayos - dry", times = length(HR.AD.Pianka.index)),
-                                       rep("Bokito - wet", times = length(HR.BW.Pianka.index)),
-                                       rep("Bokito - dry", times = length(HR.BD.Pianka.index))),
-                                Pianka.index = c(HR.KW.Pianka.index, HR.KD.Pianka.index, 
-                                                 HR.AW.Pianka.index, HR.AD.Pianka.index,
-                                                 HR.BW.Pianka.index, HR.BD.Pianka.index))
-
-HR.compare.Pianka.boxplot <- ggplot(HR.compare.Pianka, aes(x = LS, y = Pianka.index, fill = LS)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 14),
-                                                axis.title.x = element_text(size = 14),
-                                                axis.text.y = element_text(size = 12),
-                                                axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12, angle = 90)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Location - Season", y = "Pianka's index") + ylim(0, 0.035)
-
-HR.compare.Pianka.boxplot + annotate("text",
-                                     x = 1:length(table(HR.compare.Pianka$LS)),
-                                     y = rep(0.03, times = 6),
-                                     label = table(HR.compare.Pianka$LS),
+HR.compare.Levins.boxplot + annotate("text",
+                                     x = 1:length(table(HR.compare.Levins$LS)),
+                                     y = rep(0.052, times = 6),
+                                     label = table(HR.compare.Levins$LS),
                                      col = "red",
                                      vjust = - 1)
+#####
+library(EcoSimR)
 
+pianka.null.function <- function(HR.df, RA.df) {
+  null.model <- c(1:10000)
+  
+  for (n in null.model) {
+    ra3.model <- ra3(speciesData = matrix(c(HR.df$wPOO, RA.df$wPOO), nrow = 2))
+    
+    null.model[n] <- pianka(m = ra3.model) 
+  }
+  return(null.model)
+}
+
+HR.KW.wPOO.pianka <- pianka(m = matrix(c(HR.KW.focal.df$wPOO, RA.KW.focal.df$wPOO), nrow = 2))
+HR.KW.wPOO.null <- pianka.null.function(HR.KW.focal.df, RA.KW.focal.df)
+wilcox.test(HR.KW.wPOO.null, mu = HR.KW.wPOO.pianka)
+
+HR.KW.RRA.pianka <- pianka(m = matrix(c(HR.KW.focal.df$RRA, RA.KW.focal.df$RRA), nrow = 2))
+HR.KW.RRA.null <- pianka.null.function(HR.KW.focal.df, RA.KW.focal.df)
+wilcox.test(HR.KW.RRA.null, mu = HR.KW.RRA.pianka)
+
+HR.KD.wPOO.pianka <- pianka(m = matrix(c(HR.KD.focal.df$wPOO, RA.KD.focal.df$wPOO), nrow = 2))
+HR.KD.wPOO.null <- pianka.null.function(HR.KD.focal.df, RA.KD.focal.df)
+wilcox.test(HR.KD.wPOO.null, mu = HR.KD.wPOO.pianka)
+
+HR.KD.RRA.pianka <- pianka(m = matrix(c(HR.KD.focal.df$RRA, RA.KD.focal.df$RRA), nrow = 2))
+HR.KD.RRA.null <- pianka.null.function(HR.KD.focal.df, RA.KD.focal.df)
+wilcox.test(HR.KD.RRA.null, mu = HR.KD.RRA.pianka)
+
+HR.AW.wPOO.pianka <- pianka(m = matrix(c(HR.AW.focal.df$wPOO, RA.AW.focal.df$wPOO), nrow = 2))
+HR.AW.wPOO.null <- pianka.null.function(HR.AW.focal.df, RA.AW.focal.df)
+wilcox.test(HR.AW.wPOO.null, mu = HR.AW.wPOO.pianka)
+
+HR.AW.RRA.pianka <- pianka(m = matrix(c(HR.AW.focal.df$RRA, RA.AW.focal.df$RRA), nrow = 2))
+HR.AW.RRA.null <- pianka.null.function(HR.AW.focal.df, RA.AW.focal.df)
+wilcox.test(HR.AW.RRA.null, mu = HR.AW.RRA.pianka)
+
+HR.AD.wPOO.pianka <- pianka(m = matrix(c(HR.AD.focal.df$wPOO, RA.AD.focal.df$wPOO), nrow = 2))
+HR.AD.wPOO.null <- pianka.null.function(HR.AD.focal.df, RA.AD.focal.df)
+wilcox.test(HR.AD.wPOO.null, mu = HR.AD.wPOO.pianka)
+
+HR.AD.RRA.pianka <- pianka(m = matrix(c(HR.AD.focal.df$RRA, RA.AD.focal.df$RRA), nrow = 2))
+HR.AD.RRA.null <- pianka.null.function(HR.AD.focal.df, RA.AD.focal.df)
+wilcox.test(HR.AD.RRA.null, mu = HR.AD.RRA.pianka)
+
+LocationSeasonList <- c("Konye - wet" , "Konye - dry" , "Ayos - wet" , "Ayos - dry")
+
+pianka.data <- data.frame(LS = rep(LocationSeasonList, times = 2),
+                          Metric = c(rep("wPOO", times = 4), rep("RRA", times = 4)),
+                          Pianka = c(HR.KW.wPOO.pianka, HR.KD.wPOO.pianka,
+                                     HR.AW.wPOO.pianka, HR.AD.wPOO.pianka,
+                                     HR.KW.RRA.pianka, HR.KD.RRA.pianka,
+                                     HR.AW.RRA.pianka, HR.AD.RRA.pianka)) 
+
+
+pianka.plot <- ggplot(pianka.data, aes(x = LS, y = Pianka, fill = Metric)) + 
+  geom_bar(stat="identity", position = "dodge") +
+  theme_minimal() + scale_fill_manual(values = c("steelblue2", "wheat2")) +
+  theme(strip.background = element_blank(),
+       strip.text = element_text(size = 14),
+       axis.title.x = element_text(size = 14),
+       axis.text.y = element_text(size = 12),
+       axis.title.y = element_text(size = 14),
+       axis.text.x = element_text(size = 12, angle = 90)) +
+  labs(x = "Location - Season", y = "Pianka's index")
 
 # Occurrence of pest sequences
 pest.data <- readxl::read_xlsx("C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\Pest sequences.xlsx")
@@ -1944,7 +1340,7 @@ RA.BD.pest.df <- RA.pest.df[,c(as.character(RA.BD.nbrs), "OTU", "order", "family
 #####
 library(RAM)
 compare.pest.OTUs <- list(H.ruber = HR.pest.df$OTU,
-                           R.alcyone = RA.pest.df$OTU)
+                          R.alcyone = RA.pest.df$OTU)
 
 group.venn(compare.pest.OTUs, label=FALSE,  lab.cex=1, cex = 1.5,
            cat.cex = 1.5, cat.pos=c(330, 30), cat.dist = 0.05)
@@ -1963,8 +1359,8 @@ HR.pest.OTUs <- count.OTUs(HR.pest.df[,1:66])
 RA.pest.OTUs <- count.OTUs(RA.pest.df[,1:65])
 
 compare.pest.OTUs.df <- data.frame(Species = c(rep("H.ruber", times = length(HR.pest.OTUs)),
-                                                rep("R.alcyone", times = length(RA.pest.OTUs))),
-                                    Counts = c(HR.pest.OTUs, RA.pest.OTUs))
+                                               rep("R.alcyone", times = length(RA.pest.OTUs))),
+                                   Counts = c(HR.pest.OTUs, RA.pest.OTUs))
 
 focal.compare.OTUs.boxplot <- ggplot(compare.pest.OTUs.df, aes(x = Species, y = Counts, fill = Species)) +
   geom_boxplot(show.legend = FALSE) + theme_classic() +
@@ -1996,17 +1392,17 @@ RA.BD.pest.OTUs <- length(which(RA.BD.pest.df[,1]==1))
 # How does number of pest average number of pest sequences consumed vary between locations and seasons
 #####
 HR.compare.pest.OTUs.df <- data.frame(Species = c(rep("H.ruber", times = length(c(HR.KW.pest.OTUs, HR.KD.pest.OTUs,
-                                                                                   HR.AW.pest.OTUs, HR.AD.pest.OTUs,
-                                                                                   HR.BW.pest.OTUs, HR.BD.pest.OTUs)))),
-                                       LS = c(rep("Konye - wet", times = length(HR.KW.pest.OTUs)), 
-                                              rep("Konye - dry", times = length(HR.KD.pest.OTUs)),
-                                              rep("Ayos - wet", times = length(HR.AW.pest.OTUs)), 
-                                              rep("Ayos - dry", times = length(HR.AD.pest.OTUs)),
-                                              rep("Bokito - wet", times = length(HR.BW.pest.OTUs)), 
-                                              rep("Bokito - dry", times = length(HR.BD.pest.OTUs))),
-                                   Counts = c(HR.KW.pest.OTUs, HR.KD.pest.OTUs,
-                                              HR.AW.pest.OTUs, HR.AD.pest.OTUs,
-                                              HR.BW.pest.OTUs, HR.BD.pest.OTUs))
+                                                                                  HR.AW.pest.OTUs, HR.AD.pest.OTUs,
+                                                                                  HR.BW.pest.OTUs, HR.BD.pest.OTUs)))),
+                                      LS = c(rep("Konye - wet", times = length(HR.KW.pest.OTUs)), 
+                                             rep("Konye - dry", times = length(HR.KD.pest.OTUs)),
+                                             rep("Ayos - wet", times = length(HR.AW.pest.OTUs)), 
+                                             rep("Ayos - dry", times = length(HR.AD.pest.OTUs)),
+                                             rep("Bokito - wet", times = length(HR.BW.pest.OTUs)), 
+                                             rep("Bokito - dry", times = length(HR.BD.pest.OTUs))),
+                                      Counts = c(HR.KW.pest.OTUs, HR.KD.pest.OTUs,
+                                                 HR.AW.pest.OTUs, HR.AD.pest.OTUs,
+                                                 HR.BW.pest.OTUs, HR.BD.pest.OTUs))
 
 HR.compare.pest.OTUs.df.boxplot <- ggplot(HR.compare.pest.OTUs.df, aes(x = LS, y = Counts, fill = LS)) +
   geom_boxplot(show.legend = FALSE) + theme_classic() +
@@ -2020,21 +1416,21 @@ HR.compare.pest.OTUs.df.boxplot <- ggplot(HR.compare.pest.OTUs.df, aes(x = LS, y
   labs(x = "Location - Season", y = "Number of pest OTUs") 
 
 HR.compare.pest.OTUs.df.boxplot + annotate("text",
-         x = 1:length(table(HR.compare.pest.OTUs.df$LS)),
-         y = rep(4, times = 6),
-         label = table(HR.compare.pest.OTUs.df$LS),
-         col = "red",
-         vjust = - 1)
+                                           x = 1:length(table(HR.compare.pest.OTUs.df$LS)),
+                                           y = rep(4, times = 6),
+                                           label = table(HR.compare.pest.OTUs.df$LS),
+                                           col = "red",
+                                           vjust = - 1)
 
 library(FSA)
 HR.compare.pest.OTUs.kruskal <- kruskal.test(data = HR.compare.pest.OTUs.df, x = HR.compare.pest.OTUs.df$Counts,
-                                            g = HR.compare.pest.OTUs.df$LS, formula = Counts ~ LS)
+                                             g = HR.compare.pest.OTUs.df$LS, formula = Counts ~ LS)
 
 dunnTest(Counts ~ LS, data = HR.compare.pest.OTUs.df, method = "bonferroni")
 
 RA.compare.pest.OTUs.df <- data.frame(Species = c(rep("R.alcyone", times = length(c(RA.KW.pest.OTUs, RA.KD.pest.OTUs,
-                                                                                  RA.AW.pest.OTUs, RA.AD.pest.OTUs,
-                                                                                  RA.BW.pest.OTUs, RA.BD.pest.OTUs)))),
+                                                                                    RA.AW.pest.OTUs, RA.AD.pest.OTUs,
+                                                                                    RA.BW.pest.OTUs, RA.BD.pest.OTUs)))),
                                       LS = c(rep("Konye - wet", times = length(RA.KW.pest.OTUs)), 
                                              rep("Konye - dry", times = length(RA.KD.pest.OTUs)),
                                              rep("Ayos - wet", times = length(RA.AW.pest.OTUs)), 
