@@ -789,6 +789,111 @@ new.RA.BW.focal.df <- new.RA.focal.df[,c(as.character(RA.BW.nbrs))]
 new.RA.BD.focal.df <- new.RA.focal.df[,c(as.character(RA.BD.nbrs))]
 #####
 
+# function to count OTUs per sample
+#####
+count.OTUs <- function(df) {                             
+  HR.count.OTUs <- c()                                   
+  for (col in 1:ncol(df)) {                              
+    count <- which(df[,col]==1)                          
+    HR.count.OTUs <- append(HR.count.OTUs, length(count))
+  }                                                      
+  return(HR.count.OTUs)                                  
+  
+} 
+#####
+
+# compare average number of OTUs between focal species
+#####
+HR.count.OTUs <- count.OTUs(HR.focal.df[,1:79])
+RA.count.OTUs <- count.OTUs(RA.focal.df[,1:82])
+
+focal.compare.OTUs.df <- data.frame(Species = c(rep("H.ruber", times = length(HR.count.OTUs)),
+                                                rep("R.alcyone", times = length(RA.count.OTUs))),
+                                    Counts = c(HR.count.OTUs, RA.count.OTUs))
+
+focal.compare.OTUs.boxplot <- ggplot(focal.compare.OTUs.df, aes(x = Species, y = Counts, fill = Species)) +
+  geom_boxplot(show.legend = FALSE) + theme_classic() +
+  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
+                                                strip.text = element_text(size = 10),
+                                                axis.title.x = element_text(size = 10),
+                                                axis.text.y = element_text(size = 10)) +
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
+  labs(x = "Species", y = "Number of OTUs")
+
+wilcox.test(HR.count.OTUs, RA.count.OTUs)
+shapiro.test(focal.compare.OTUs.df$Counts)
+#####
+
+# number of OTUs in each Location-Season
+HR.KW.OTUs <- count.OTUs(HR.KW.focal.cut)
+HR.KD.OTUs <- count.OTUs(HR.KD.focal.cut)
+HR.AW.OTUs <- count.OTUs(HR.AW.focal.cut)
+HR.AD.OTUs <- count.OTUs(HR.AD.focal.cut)
+HR.BW.OTUs <- count.OTUs(HR.BW.focal.cut)
+HR.BD.OTUs <- count.OTUs(HR.BD.focal.cut)
+
+RA.KW.OTUs <- count.OTUs(RA.KW.focal.cut)
+RA.KD.OTUs <- count.OTUs(RA.KD.focal.cut)
+RA.AW.OTUs <- count.OTUs(RA.AW.focal.cut)
+RA.AD.OTUs <- count.OTUs(RA.AD.focal.cut)
+RA.BW.OTUs <- length(which(RA.BW.focal.df==1))
+RA.BD.OTUs <- length(which(RA.BD.focal.df==1))
+
+focal.compare.OTUs.df <- data.frame(Species = rep("H.ruber", times = length(c(HR.KW.OTUs, HR.KD.OTUs,
+                                                                                HR.AW.OTUs,HR.AD.OTUs,
+                                                                                HR.BW.OTUs,HR.BD.OTUs))),
+                                    LS = c(rep("Konye - wet", times = length(HR.KW.OTUs)),
+                                           rep("Konye - dry", times = length(HR.KD.OTUs)),
+                                           rep("Ayos - wet", times = length(HR.AW.OTUs)),
+                                           rep("Ayos - dry", times = length(HR.AD.OTUs)),
+                                           rep("Bokito - wet", times = length(HR.BW.OTUs)),
+                                           rep("Bokito - dry", times = length(HR.BD.OTUs))),
+                                    Counts = c(HR.KW.OTUs, HR.KD.OTUs,HR.AW.OTUs,HR.AD.OTUs,HR.BW.OTUs,HR.BD.OTUs))
+
+focal.compare.OTUs.df$LS <- factor(focal.compare.OTUs.df$LS,
+                                   levels = c("Konye - wet", "Konye - dry",
+                                              "Ayos - wet", "Ayos - dry",
+                                              "Bokito - wet", "Bokito - dry"))
+
+focal.compare.OTUs.boxplot <- ggplot(focal.compare.OTUs.df, aes(x = LS, y = Counts, fill = LS)) +
+  geom_boxplot(show.legend = FALSE, outlier.shape = NA) + theme_classic() +
+  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
+                                                strip.text = element_text(size = 10),
+                                                axis.text.x = element_text(size = 10, angle = 45, vjust = 0.5),
+                                                axis.text.y = element_text(size = 10)) +
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
+  labs(x = "Location - Season", y = "Number of OTUs") + ylim(20,50)
+
+focal.compare.OTUs.boxplot + annotate("text",
+                                      x = 1:length(table(focal.compare.OTUs.df$LS)),
+                                      y = rep(47, times = 6),
+                                      label = table(focal.compare.OTUs.df$LS),
+                                      col = "red",
+                                      vjust = - 1)
+
+compare.OTUs.kruskal <- kruskal.test(data = focal.compare.OTUs.df, x = focal.compare.OTUs.df$Counts,
+                                             g = focal.compare.OTUs.df$LS, formula = Counts ~ LS)
+
+
+focal.compare.OTUs.df <- data.frame(LS = c(rep("HR - Konye - wet", times = length(HR.KW.OTUs)),
+                                           rep("HR - Konye - dry", times = length(HR.KD.OTUs)),
+                                           rep("HR - Ayos - wet", times = length(HR.AW.OTUs)),
+                                           rep("HR - Ayos - dry", times = length(HR.AD.OTUs)),
+                                           rep("HR - Bokito - wet", times = length(HR.BW.OTUs)),
+                                           rep("HR - Bokito - dry", times = length(HR.BD.OTUs)),
+                                           rep("RA - Konye - wet", times = length(RA.KW.OTUs)),
+                                           rep("RA - Konye - dry", times = length(RA.KD.OTUs)),
+                                           rep("RA - Ayos - wet", times = length(RA.AW.OTUs)),
+                                           rep("RA - Ayos - dry", times = length(RA.AD.OTUs)),
+                                           rep("RA - Bokito - wet", times = length(RA.BW.OTUs)),
+                                           rep("RA - Bokito - dry", times = length(RA.BD.OTUs))),
+                                    Counts = c(HR.KW.OTUs, HR.KD.OTUs,HR.AW.OTUs,HR.AD.OTUs,HR.BW.OTUs,HR.BD.OTUs,
+                                               RA.KW.OTUs, RA.KD.OTUs,RA.AW.OTUs,RA.AD.OTUs,RA.BW.OTUs,RA.BD.OTUs))
+
+compare.OTUs.kruskal <- kruskal.test(data = focal.compare.OTUs.df, x = focal.compare.OTUs.df$Counts,
+                                     g = focal.compare.OTUs.df$LS, formula = Counts ~ LS)
+
+
 # occurrence calculations for focal species
 #####
 HR.KW.wPOO <- FOO.function(HR.KW.focal.df)
@@ -920,41 +1025,6 @@ new.RA.AD.focal.df <- cbind(new.RA.AD.focal.df, data.frame(RA.AD.wPOO, RA.AD.RRA
 colnames(new.RA.AD.focal.df) <- c(RA.AD.nbrs, "OTU", "order", "family", "genus", "species",
                                   "wPOO", "RRA")
 
-# function to count OTUs per sample
-#####
-count.OTUs <- function(df) {                             
-  HR.count.OTUs <- c()                                   
-  for (col in 1:ncol(df)) {                              
-    count <- which(df[,col]==1)                          
-    HR.count.OTUs <- append(HR.count.OTUs, length(count))
-  }                                                      
-  return(HR.count.OTUs)                                  
-  
-} 
-#####
-
-# compare average number of OTUs between focal species
-#####
-HR.count.OTUs <- count.OTUs(HR.focal.df[,1:79])
-RA.count.OTUs <- count.OTUs(RA.focal.df[,1:82])
-
-focal.compare.OTUs.df <- data.frame(Species = c(rep("H.ruber", times = length(HR.count.OTUs)),
-                                                rep("R.alcyone", times = length(RA.count.OTUs))),
-                                    Counts = c(HR.count.OTUs, RA.count.OTUs))
-
-focal.compare.OTUs.boxplot <- ggplot(focal.compare.OTUs.df, aes(x = Species, y = Counts, fill = Species)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 10),
-                                                axis.title.x = element_text(size = 10),
-                                                axis.text.y = element_text(size = 10)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Species", y = "Number of OTUs")
-
-wilcox.test(HR.count.OTUs, RA.count.OTUs)
-shapiro.test(focal.compare.OTUs.df$Counts)
-#####
-
 # diet composition - most common order
 #####
 not.na <- c()
@@ -1025,14 +1095,6 @@ Shannon.index.function <- function(df) {
 } 
 #####
 
-HR.Shannon.index <- Shannon.index.function(HR.focal.df[,1:79])
-RA.Shannon.index <- Shannon.index.function(RA.focal.df[,1:82])
-
-HR.Shannon.index <- Shannon.index.function(new.HR.focal.df[,1:79])
-RA.Shannon.index <- Shannon.index.function(new.RA.focal.df[,1:82])
-
-shapiro.test(c(HR.Shannon.index, RA.Shannon.index))
-
 # Shannon for each location-season
 #####
 HR.KW.Shannon.index <- Shannon.index.function(HR.KW.focal.df[,1:13])
@@ -1072,20 +1134,25 @@ HR.compare.Shannon <- data.frame(Species = rep("H.ruber", times = length(c(HR.KW
                                         rep("Ayos - dry", times = length(new.HR.AD.Shannon.index)),
                                         rep("Bokito - wet", times = length(new.HR.BW.Shannon.index)),
                                         rep("Bokito - dry", times = length(new.HR.BD.Shannon.index))),
-                                 Shannon.index = c(new.HR.KW.Shannon.index, new.HR.KD.Shannon.index, 
-                                                   new.HR.AW.Shannon.index, new.HR.AD.Shannon.index,
-                                                   new.HR.BW.Shannon.index, new.HR.BD.Shannon.index))
+                                 Shannon.index = c(HR.KW.Shannon.index, HR.KD.Shannon.index, 
+                                                   HR.AW.Shannon.index, HR.AD.Shannon.index,
+                                                   HR.BW.Shannon.index, HR.BD.Shannon.index))
+
+HR.compare.Shannon$LS <- factor(HR.compare.Shannon$LS,
+                                   levels = c("Konye - wet", "Konye - dry",
+                                              "Ayos - wet", "Ayos - dry",
+                                              "Bokito - wet", "Bokito - dry"))
 
 HR.compare.Shannon.boxplot <- ggplot(HR.compare.Shannon, aes(x = LS, y = Shannon.index, fill = LS)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
+  geom_boxplot(show.legend = FALSE, outlier.shape = NA) + theme_classic() +
   scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
                                                 strip.text = element_text(size = 14),
                                                 axis.title.x = element_text(size = 14),
                                                 axis.text.y = element_text(size = 12),
                                                 axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12, angle = 90)) +
+                                                axis.text.x = element_text(size = 12, angle = 45, vjust = 0.5)) +
   stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Location - Season", y = "Shannon index") + ylim(2.5,4.5)
+  labs(x = "Location - Season", y = "Shannon index") + ylim(2.5,4.4)
 
 HR.compare.Shannon.boxplot + annotate("text",
                                       x = 1:length(table(HR.compare.Shannon$LS)),
@@ -1094,37 +1161,38 @@ HR.compare.Shannon.boxplot + annotate("text",
                                       col = "red",
                                       vjust = - 1)
 
-RA.compare.Shannon <- data.frame(Species = rep("H.ruber", times = length(c(RA.KW.Shannon.index, RA.KD.Shannon.index,
-                                                                           RA.AW.Shannon.index, RA.AD.Shannon.index,
-                                                                           RA.BW.Shannon.index, RA.BD.Shannon.index))),
-                                 LS = c(rep("Konye - wet", times = length(RA.KW.Shannon.index)),
-                                        rep("Konye - dry", times = length(RA.KD.Shannon.index)),
-                                        rep("Ayos - wet", times = length(RA.AW.Shannon.index)),
-                                        rep("Ayos - dry", times = length(RA.AD.Shannon.index)),
-                                        rep("Bokito - wet", times = length(RA.BW.Shannon.index)),
-                                        rep("Bokito - dry", times = length(RA.BD.Shannon.index))),
-                                 Shannon.index = c(RA.KW.Shannon.index, RA.KD.Shannon.index, 
-                                                   RA.AW.Shannon.index, RA.AD.Shannon.index,
-                                                   RA.BW.Shannon.index, RA.BD.Shannon.index))
 
-RA.compare.Shannon.boxplot <- ggplot(RA.compare.Shannon, aes(x = LS, y = Shannon.index, fill = LS)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
-  scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
-                                                strip.text = element_text(size = 14),
-                                                axis.title.x = element_text(size = 14),
-                                                axis.text.y = element_text(size = 12),
-                                                axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12, angle = 90)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Location - Season", y = "Shannon index") + ylim(0, 5.2)
+focal.compare.Shannon.df <- data.frame(LS = c(rep("HR - Konye - wet", times = length(HR.KW.Shannon.index)),
+                                           rep("HR - Konye - dry", times = length(HR.KD.Shannon.index)),
+                                           rep("HR - Ayos - wet", times = length(HR.AW.Shannon.index)),
+                                           rep("HR - Ayos - dry", times = length(HR.AD.Shannon.index)),
+                                           rep("HR - Bokito - wet", times = length(HR.BW.Shannon.index)),
+                                           rep("HR - Bokito - dry", times = length(HR.BD.Shannon.index)),
+                                           rep("RA - Konye - wet", times = length(RA.KW.Shannon.index)),
+                                           rep("RA - Konye - dry", times = length(RA.KD.Shannon.index)),
+                                           rep("RA - Ayos - wet", times = length(RA.AW.Shannon.index)),
+                                           rep("RA - Ayos - dry", times = length(RA.AD.Shannon.index)),
+                                           rep("RA - Bokito - wet", times = length(RA.BW.Shannon.index)),
+                                           rep("RA - Bokito - dry", times = length(RA.BD.Shannon.index))),
+                                    Counts = c(new.HR.KW.Shannon.index, new.HR.KD.Shannon.index, new.HR.AW.Shannon.index,
+                                               new.HR.AD.Shannon.index, new.HR.BW.Shannon.index, new.HR.BD.Shannon.index,
+                                               new.RA.KW.Shannon.index, new.RA.KD.Shannon.index, new.RA.AW.Shannon.index,
+                                               new.RA.AD.Shannon.index, new.RA.BW.Shannon.index, new.RA.BD.Shannon.index))
 
-RA.compare.Shannon.boxplot + annotate("text",
-                                      x = 1:length(table(RA.compare.Shannon$LS)),
-                                      y = rep(4.8, times = 6),
-                                      label = table(RA.compare.Shannon$LS),
-                                      col = "red",
-                                      vjust = - 1)
+shapiro.test(focal.compare.Shannon.df$Counts)
+compare.Shannon.kruskal <- kruskal.test(data = focal.compare.Shannon.df, x = focal.compare.Shannon.df$Counts,
+                                     g = focal.compare.Shannon.df$LS, formula = Counts ~ LS)
+
 #####
+
+# range in Shannon index calculated using each metric
+mean(focal.compare.Shannon.df$Counts)
+
+PA.shannon <- focal.compare.Shannon.df
+RRA.shannon <- focal.compare.Shannon.df
+
+shapiro.test(c(PA.shannon$Counts, RRA.shannon$Counts))
+wilcox.test(PA.shannon$Counts, RRA.shannon$Counts)
 
 # Niche breadth
 # function for calculating Levin's index
@@ -1154,17 +1222,6 @@ Levins.function <- function(df) {
 }
 #####
 
-HR.Levins.index <- Levins.function(HR.focal.df[,1:79])
-RA.Levins.index <- Levins.function(RA.focal.df[,1:82])
-
-shapiro.test(c(HR.Levins.index, RA.Levins.index))
-
-wilcox.test(HR.Shannon.index, RA.Shannon.index)
-boot.out <- boot(data = focal.compare.Shannon, statistic = med.diff, R = 1000)
-median(boot.out$t)
-
-boot.ci(boot.out, type = "perc")
-
 # Levins for each location-season
 #####
 HR.KW.Levins.index <- Levins.function(HR.KW.focal.cut[,1:13])
@@ -1192,37 +1249,81 @@ new.RA.KD.Levins.index <- Levins.function(new.RA.KD.focal.cut[,1:18])
 new.RA.AW.Levins.index <- Levins.function(new.RA.AW.focal.cut[,1:20])
 new.RA.AD.Levins.index <- Levins.function(new.RA.AD.focal.cut[,1:13])
 
-HR.compare.Levins <- data.frame(Species = rep("H.ruber", times = length(c(HR.KW.Levins.index$All.Levins.std, HR.KD.Levins.index$All.Levins.std,
-                                                                          HR.AW.Levins.index$All.Levins.std, HR.AD.Levins.index$All.Levins.std,
-                                                                          HR.BW.Levins.index$All.Levins.std, HR.BD.Levins.index$All.Levins.std))),
-                                LS = c(rep("Konye - wet", times = length(HR.KW.Levins.index$All.Levins.std)),
-                                       rep("Konye - dry", times = length(HR.KD.Levins.index$All.Levins.std)),
-                                       rep("Ayos - wet", times = length(HR.AW.Levins.index$All.Levins.std)),
-                                       rep("Ayos - dry", times = length(HR.AD.Levins.index$All.Levins.std)),
-                                       rep("Bokito - wet", times = length(HR.BW.Levins.index$All.Levins.std)),
-                                       rep("Bokito - dry", times = length(HR.BD.Levins.index$All.Levins.std))),
-                                Levins.index = c(new.HR.KW.Levins.index$All.Levins.std, new.HR.KD.Levins.index$All.Levins.std, 
-                                                 new.HR.AW.Levins.index$All.Levins.std, new.HR.AD.Levins.index$All.Levins.std,
-                                                 new.HR.BW.Levins.index$All.Levins.std, new.HR.BD.Levins.index$All.Levins.std))
+focal.compare.Levins.df <- data.frame(Species = rep("H.ruber", times = length(c(RA.KW.Levins.index$All.Levins.std, RA.KD.Levins.index$All.Levins.std,
+                                                                          RA.AW.Levins.index$All.Levins.std, RA.AD.Levins.index$All.Levins.std))),
+                                                                          #RA.BW.Levins.index$All.Levins.std, RA.BD.Levins.index$All.Levins.std))),
+                                LS = c(rep("Konye - wet", times = length(RA.KW.Levins.index$All.Levins.std)),
+                                       rep("Konye - dry", times = length(RA.KD.Levins.index$All.Levins.std)),
+                                       rep("Ayos - wet", times = length(RA.AW.Levins.index$All.Levins.std)),
+                                       rep("Ayos - dry", times = length(RA.AD.Levins.index$All.Levins.std))),
+                                       #rep("Bokito - wet", times = length(RA.BW.Levins.index$All.Levins.std)),
+                                       #rep("Bokito - dry", times = length(RA.BD.Levins.index$All.Levins.std))),
+                                Levins.index = c(RA.KW.Levins.index$All.Levins.std, RA.KD.Levins.index$All.Levins.std, 
+                                                 RA.AW.Levins.index$All.Levins.std, RA.AD.Levins.index$All.Levins.std))
+                                                 #new.RA.BW.Levins.index$All.Levins.std, new.RA.BD.Levins.index$All.Levins.std))
 
-HR.compare.Levins.boxplot <- ggplot(HR.compare.Levins, aes(x = LS, y = Levins.index, fill = LS)) +
-  geom_boxplot(show.legend = FALSE) + theme_classic() +
+focal.compare.Levins.df$LS <- factor(focal.compare.Levins.df$LS,
+                                levels = c("Konye - wet", "Konye - dry",
+                                           "Ayos - wet", "Ayos - dry"))
+                                           #"Bokito - wet", "Bokito - dry"))
+
+y_expression <- expression("Levin's index" ~ "" ~(B[A]))
+
+RA.compare.Levins.boxplot <- ggplot(focal.compare.Levins.df, aes(x = LS, y = Levins.index, fill = LS)) +
+  geom_boxplot(show.legend = FALSE, outlier.shape = NA) + theme_classic() +
   scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
                                                 strip.text = element_text(size = 14),
                                                 axis.title.x = element_text(size = 14),
                                                 axis.text.y = element_text(size = 12),
                                                 axis.title.y = element_text(size = 14),
-                                                axis.text.x = element_text(size = 12, angle = 90)) +
+                                                axis.text.x = element_text(size = 12, angle = 45, vjust = 0.5)) +
   stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Location - Season", y = "Levins index") + ylim(0,0.055)
+  labs(x = "Location - Season", y = y_expression) + ylim(0,0.27)
 
-HR.compare.Levins.boxplot + annotate("text",
-                                     x = 1:length(table(HR.compare.Levins$LS)),
-                                     y = rep(0.052, times = 6),
-                                     label = table(HR.compare.Levins$LS),
+RA.compare.Levins.boxplot + annotate("text",
+                                     x = 1:length(table(focal.compare.Levins.df$LS)),
+                                     y = rep(0.245, times = 4),
+                                     label = table(focal.compare.Levins.df$LS),
                                      col = "red",
                                      vjust = - 1)
+
+focal.compare.Levins.df <- data.frame(LS = c(rep("HR - Konye - wet", times = length(HR.KW.Levins.index$All.Levins.std)),
+                                              rep("HR - Konye - dry", times = length(HR.KD.Levins.index$All.Levins.std)),
+                                              rep("HR - Ayos - wet", times = length(HR.AW.Levins.index$All.Levins.std)),
+                                              rep("HR - Ayos - dry", times = length(HR.AD.Levins.index$All.Levins.std)),
+                                              rep("HR - Bokito - wet", times = length(HR.BW.Levins.index$All.Levins.std)),
+                                              rep("HR - Bokito - dry", times = length(HR.BD.Levins.index$All.Levins.std)),
+                                              rep("RA - Konye - wet", times = length(RA.KW.Levins.index$All.Levins.std)),
+                                              rep("RA - Konye - dry", times = length(RA.KD.Levins.index$All.Levins.std)),
+                                              rep("RA - Ayos - wet", times = length(RA.AW.Levins.index$All.Levins.std)),
+                                              rep("RA - Ayos - dry", times = length(RA.AD.Levins.index$All.Levins.std))),
+                                       Counts = c(HR.KW.Levins.index$All.Levins.std, HR.KD.Levins.index$All.Levins.std, 
+                                                  HR.AW.Levins.index$All.Levins.std, HR.AD.Levins.index$All.Levins.std, 
+                                                  HR.BW.Levins.index$All.Levins.std, HR.BD.Levins.index$All.Levins.std,
+                                                  RA.KW.Levins.index$All.Levins.std, RA.KD.Levins.index$All.Levins.std, 
+                                                  RA.AW.Levins.index$All.Levins.std, RA.AD.Levins.index$All.Levins.std))
+
+shapiro.test(RRA.Levins$Counts)
+compare.Levins.kruskal <- kruskal.test(data = RRA.Levins, x = RRA.Levins$Counts,
+                                        g = RRA.Levins$LS, formula = Counts ~ LS)
+
+library(FSA)
+dunnTest(Counts ~ LS, data = RRA.Levins, method = "bonferroni")
+
+
 #####
+
+# mean Levin's index calculated using each metric
+mean(PA.Levins$Counts)
+mean(RRA.Levins$Counts)
+
+PA.Levins <- focal.compare.Levins.df
+RRA.Levins <- focal.compare.Levins.df
+
+shapiro.test(c(PA.shannon$Counts, RRA.shannon$Counts))
+wilcox.test(PA.Levins$Counts, RRA.Levins$Counts)
+#####
+
 library(EcoSimR)
 
 pianka.null.function <- function(HR.df, RA.df) {
@@ -1277,17 +1378,33 @@ pianka.data <- data.frame(LS = rep(LocationSeasonList, times = 2),
                                      HR.KW.RRA.pianka, HR.KD.RRA.pianka,
                                      HR.AW.RRA.pianka, HR.AD.RRA.pianka)) 
 
+pianka.data$LS <- factor(pianka.data$LS,
+                                     levels = c("Konye - wet", "Konye - dry",
+                                                "Ayos - wet", "Ayos - dry"))
+
 
 pianka.plot <- ggplot(pianka.data, aes(x = LS, y = Pianka, fill = Metric)) + 
   geom_bar(stat="identity", position = "dodge") +
-  theme_minimal() + scale_fill_manual(values = c("steelblue2", "wheat2")) +
+  theme_minimal() + scale_fill_manual(values = c("darkorange", "darkolivegreen3")) +
   theme(strip.background = element_blank(),
        strip.text = element_text(size = 14),
        axis.title.x = element_text(size = 14),
        axis.text.y = element_text(size = 12),
        axis.title.y = element_text(size = 14),
-       axis.text.x = element_text(size = 12, angle = 90)) +
+       axis.text.x = element_text(size = 12, angle = 45, vjust = 0.5)) +
   labs(x = "Location - Season", y = "Pianka's index")
+
+hist(pianka.data$Pianka)
+shapiro.test(pianka.data$Pianka)
+t.test(c(HR.KW.wPOO.pianka, HR.KD.wPOO.pianka,
+                 HR.AW.wPOO.pianka, HR.AD.wPOO.pianka), 
+            c(HR.KW.RRA.pianka, HR.KD.RRA.pianka,
+                 HR.AW.RRA.pianka, HR.AD.RRA.pianka))
+
+wilcox.test(c(HR.KW.wPOO.pianka, HR.KD.wPOO.pianka,
+         HR.AW.wPOO.pianka, HR.AD.wPOO.pianka), 
+       c(HR.KW.RRA.pianka, HR.KD.RRA.pianka,
+         HR.AW.RRA.pianka, HR.AD.RRA.pianka))
 
 # Occurrence of pest sequences
 pest.data <- readxl::read_xlsx("C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\Pest sequences.xlsx")
