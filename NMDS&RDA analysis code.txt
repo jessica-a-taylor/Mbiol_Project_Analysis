@@ -1,0 +1,258 @@
+focal.nmds <- metaMDS(zbj.focal[1:944], distance = "jaccard")
+plot(focal.nmds, type = "t", main = paste("NMDS/Jaccard - Stress = ",                       
+                                             round(focal.nmds$stress, 3)))                     
+                                                                                               
+focal.envfit <- envfit(focal.nmds, focal.info, permutations = 999, na.rm = TRUE)            
+plot(focal.envfit)                                                                          
+                                                                                               
+en_coord_cat <- as.data.frame(scores(focal.envfit, "factors")) 
+                                                                                               
+data.scores <- as.data.frame(scores(focal.nmds))
+data.scores <- cbind(data.scores, focal.info)                                               
+                                                                                               
+data.scores <- data.scores[-c(155, 158),]
+
+focal.gg <- ggplot(data = data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
+  geom_point(data = data.scores, aes(shape = Species), size = 3, alpha = 0.5, show.legend = FALSE) + 
+  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+        axis.ticks = element_blank(), legend.key = element_blank(),
+        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        legend.text = element_text(size = 9, colour = "grey30")) + 
+  scale_size_manual(values = c(0.2,0.2))
+
+focal.gg
+#####
+
+# db-rda for diet overlap between species
+#####
+focal.interact.species <- capscale(zbj.focal[1:944] ~ zbj.focal$Species, distance = "jaccard", add = TRUE)
+anova(focal.interact.species, step = 1000, perm.max = 1000)
+
+focal.interact.season <- capscale(zbj.focal[1:944] ~ zbj.focal$Season, distance = "jaccard", add = TRUE)
+anova(focal.interact.season, step = 1000, perm.max = 1000)
+
+focal.interact.location <- capscale(zbj.focal[1:944] ~ zbj.focal$Location, distance = "jaccard", add = TRUE)
+anova(focal.interact.location, step = 1000, perm.max = 1000)
+
+focal.interact.all <- capscale(zbj.focal[1:944] ~ Species + Season + Location, data = zbj.focal[946:948], distance = "jaccard", add = TRUE)
+plot(focal.interact.all)
+output <- anova(focal.interact.all, step = 1000, perm.max = 1000)
+
+vec = output$SumOfSqs/sum(output$SumOfSqs)*100
+table = output
+table$SumOfSqs = vec
+table
+
+anova(focal.interact.all, by="axis", perm.max=500)
+
+output2 <- anova(focal.interact.all, by="terms", permu=200)
+vec2 = output2$SumOfSqs/sum(output2$SumOfSqs)*100
+table2 = output2
+table2$SumOfSqs = vec2
+table2
+#####
+
+# ordination for diet overlap between seasons and locations for each species
+#####
+new.data.scores <- data.scores
+new.data.scores <- cbind(new.data.scores, paste(new.data.scores$Location, "-", new.data.scores$Season))
+colnames(new.data.scores) <- c("NMDS1", "NMDS2", "Species", "Location", "Season", "Location - Season")
+
+new.data.scores$`Location - Season` <- factor(new.data.scores$`Location - Season`,
+                                              levels = c("Konye - wet", "Konye - dry",
+                                                         "Ayos - wet", "Ayos - dry",
+                                                         "Bokito - wet", "Bokito - dry"))
+
+colnames(new.data.scores) <- c("NMDS1", "NMDS2", "Species", "Location", "Season", "Location - Season")
+
+LS.list <- unique(new.data.scores$`Location - Season`)
+LS.list <- factor(LS.list, levels = c("Konye - wet", "Konye - dry",
+                                      "Ayos - wet", "Ayos - dry",
+                                      "Bokito - wet", "Bokito - dry"))
+
+ordination.label <- c()
+for (LS in LS.list) {
+  NDS <- new.data.scores[new.data.scores$`Location - Season`==LS,]
+  
+  for (sp in unique(new.data.scores$Species)) {
+    NDS.species <- NDS[NDS$Species==sp,]
+    ordination.label <- append(ordination.label, length(NDS.species$Species))
+  }
+}
+
+label.df <- data.frame(Species = rep(unique(new.data.scores$Species), times = 3),
+                       Place = LS.list,
+                       Count = ordination.label)
+
+focal.gg2 <- ggplot(data = new.data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
+  geom_point(data = new.data.scores, aes(shape = Species,), size = 3, alpha = 0.5, show.legend = FALSE) + 
+  scale_size_manual(values = c(0.2,0.2)) + facet_wrap(vars(`Location - Season`), ncol = 2) +
+  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+        axis.ticks = element_blank(), legend.key = element_blank(),
+        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        legend.text = element_text(size = 9, colour = "grey30"),
+        panel.spacing = unit(0.5, "cm", data = NULL),
+        strip.background = element_blank()) 
+#####
+
+# db-rda for diet overlap between seasons and locations for each species
+#####
+new.zbj.focal <- zbj.focal
+new.zbj.focal <- cbind(new.zbj.focal, paste(new.zbj.focal$Location, "-", new.zbj.focal$Season))
+colnames(new.zbj.focal) <- c(names(zbj.focal), "Location - Season")
+
+capscale.function <- function(df) {
+  
+  focal.interact <- capscale(df[1:944] ~ df$Species, distance = "jaccard", add = TRUE)
+  interact.output <- anova(focal.interact, step = 1000, perm.max = 200)
+  
+  vec = interact.output$SumOfSqs/sum(interact.output$SumOfSqs)*100
+  table = interact.output
+  table$SumOfSqs = vec
+  table
+
+  return(table)
+}
+
+KonyeWet.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Konye - wet",]) 
+KonyeDry.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Konye - dry",]) 
+AyosWet.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Ayos - wet",]) 
+AyosDry.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Ayos - dry",]) 
+BokitoWet.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Bokito - wet",]) 
+BokitoDry.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Bokito - dry",]) 
+#####
+
+
+# repeat for RRA data
+focal.nmds <- metaMDS(new.zbj.rra[1:838], distance = "jaccard", k = 3, 
+                      trymax=300, trace = FALSE)
+plot(focal.nmds, main = paste("NMDS/Jaccard - Stress = ",                       
+                                          round(focal.nmds$stress, 3)))  
+stressplot(focal.nmds)
+
+focal.envfit <- envfit(focal.nmds, focal.info, permutations = 999, na.rm = TRUE)            
+plot(focal.envfit)                                                                          
+
+en_coord_cat <- as.data.frame(scores(focal.envfit, "factors")) 
+
+data.scores <- as.data.frame(scores(focal.nmds))
+data.scores <- cbind(data.scores, focal.info)                                               
+
+data.scores <- data.scores[-c(155, 158),]
+
+focal.gg <- ggplot(data = data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
+  geom_point(data = data.scores, aes(shape = Species), size = 3, alpha = 0.5, show.legend = FALSE) + 
+  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+        axis.ticks = element_blank(), legend.key = element_blank(),
+        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        legend.text = element_text(size = 9, colour = "grey30")) + 
+  scale_size_manual(values = c(0.2,0.2))
+
+focal.gg
+#####
+
+# db-rda for diet overlap between species
+#####
+focal.interact.species <- capscale(zbj.focal.RRA[1:944] ~ zbj.focal.RRA$Species, distance = "jaccard", add = TRUE)
+anova(focal.interact.species, step = 1000, perm.max = 1000)
+
+focal.interact.season <- capscale(zbj.focal.RRA[1:944] ~ zbj.focal.RRA$Season, distance = "jaccard", add = TRUE)
+anova(focal.interact.season, step = 1000, perm.max = 1000)
+
+focal.interact.location <- capscale(zbj.focal.RRA[1:944] ~ zbj.focal.RRA$Location, distance = "jaccard", add = TRUE)
+anova(focal.interact.location, step = 1000, perm.max = 1000)
+
+focal.interact.all <- capscale(zbj.focal.RRA[1:944] ~ Species + Season + Location, data = zbj.focal.RRA[946:948], distance = "jaccard", add = TRUE)
+plot(focal.interact.all)
+output <- anova(focal.interact.all, step = 1000, perm.max = 1000)
+
+vec = output$SumOfSqs/sum(output$SumOfSqs)*100
+table = output
+table$SumOfSqs = vec
+table
+
+anova(focal.interact.all, by="axis", perm.max=500)
+
+output2 <- anova(focal.interact.all, by="terms", permu=200)
+vec2 = output2$SumOfSqs/sum(output2$SumOfSqs)*100
+table2 = output2
+table2$SumOfSqs = vec2
+table2
+#####
+
+# ordination for diet overlap between seasons and locations for each species
+#####
+new.data.scores <- data.scores
+new.data.scores <- cbind(new.data.scores, paste(new.data.scores$Location, "-", new.data.scores$Season))
+colnames(new.data.scores) <- c("NMDS1", "NMDS2", "Species", "Location", "Season", "Location - Season")
+
+new.data.scores$`Location - Season` <- factor(new.data.scores$`Location - Season`,
+                                              levels = c("Konye - wet", "Konye - dry",
+                                                         "Ayos - wet", "Ayos - dry",
+                                                         "Bokito - wet", "Bokito - dry"))
+
+colnames(new.data.scores) <- c("NMDS1", "NMDS2", "Species", "Location", "Season", "Location - Season")
+
+LS.list <- unique(new.data.scores$`Location - Season`)
+LS.list <- factor(LS.list, levels = c("Konye - wet", "Konye - dry",
+                                      "Ayos - wet", "Ayos - dry",
+                                      "Bokito - wet", "Bokito - dry"))
+
+ordination.label <- c()
+for (LS in LS.list) {
+  NDS <- new.data.scores[new.data.scores$`Location - Season`==LS,]
+  
+  for (sp in unique(new.data.scores$Species)) {
+    NDS.species <- NDS[NDS$Species==sp,]
+    ordination.label <- append(ordination.label, length(NDS.species$Species))
+  }
+}
+
+label.df <- data.frame(Species = rep(unique(new.data.scores$Species), times = 3),
+                       Place = LS.list,
+                       Count = ordination.label)
+
+focal.gg2 <- ggplot(data = new.data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
+  geom_point(data = new.data.scores, aes(shape = Species,), size = 3, alpha = 0.5, show.legend = FALSE) + 
+  scale_size_manual(values = c(0.2,0.2)) + facet_wrap(vars(`Location - Season`), ncol = 2) +
+  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+        axis.ticks = element_blank(), legend.key = element_blank(),
+        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        legend.text = element_text(size = 9, colour = "grey30"),
+        panel.spacing = unit(0.5, "cm", data = NULL),
+        strip.background = element_blank()) 
+#####
+
+# db-rda for diet overlap between seasons and locations for each species
+#####
+new.zbj.focal.RRA <- zbj.focal.RRA
+new.zbj.focal.RRA <- cbind(new.zbj.focal.RRA, paste(new.zbj.focal.RRA$Location, "-", new.zbj.focal.RRA$Season))
+colnames(new.zbj.focal.RRA) <- c(names(zbj.focal.RRA), "Location - Season")
+
+capscale.function <- function(df) {
+  
+  focal.interact <- capscale(df[1:944] ~ df$Species, distance = "jaccard", add = TRUE)
+  interact.output <- anova(focal.interact, step = 1000, perm.max = 200)
+  
+  vec = interact.output$SumOfSqs/sum(interact.output$SumOfSqs)*100
+  table = interact.output
+  table$SumOfSqs = vec
+  table
+  
+  return(table)
+}
+
+KonyeWet.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Konye - wet",]) 
+KonyeDry.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Konye - dry",]) 
+AyosWet.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Ayos - wet",]) 
+AyosDry.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Ayos - dry",]) 
+BokitoWet.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Bokito - wet",]) 
+BokitoDry.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Bokito - dry",]) 

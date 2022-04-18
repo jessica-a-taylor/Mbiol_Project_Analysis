@@ -34,9 +34,9 @@ filter.rows <- function(x, y, z) {
   return(z)
 }
 #####     
-insect.data.cut <- filter.rows(insect.data[,2:270], 10, z)
+#insect.data.cut <- filter.rows(insect.data[,2:270], 10, z)
                                                                    
-insect.data <- insect.data[-c(insect.data.cut),]                
+#insect.data <- insect.data[-c(insect.data.cut),]                
                                 
 # normalise to remove OTUs that are represented by less than 1% of reads in each sample
 new.insect.data <- as.data.frame(insect.data[,-c(1,271:276)])
@@ -331,272 +331,23 @@ library(writexl)
 write_xlsx(zbj.focal, "C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\focal.species.data.xlsx")
 write_xlsx(zbj.focal.RRA, "C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\focal.species.data.RRA.xlsx")
 
-# ordination plot for diet overlap between species
 #####
-library(vegan)                                                                              
-library(dplyr)                                                                              
-library(ggplot2)                                                                            
-library(ggalt)                                                                              
-library(ggforce)                                                                            
-library(concaveman)                                                                         
-                                                                                            
-focal.nmds <- metaMDS(zbj.focal[1:944], distance = "jaccard")
-plot(focal.nmds, type = "t", main = paste("NMDS/Jaccard - Stress = ",                       
-                                             round(focal.nmds$stress, 3)))                     
-                                                                                               
-focal.envfit <- envfit(focal.nmds, focal.info, permutations = 999, na.rm = TRUE)            
-plot(focal.envfit)                                                                          
-                                                                                               
-en_coord_cat <- as.data.frame(scores(focal.envfit, "factors")) 
-                                                                                               
-data.scores <- as.data.frame(scores(focal.nmds))
-data.scores <- cbind(data.scores, focal.info)                                               
-                                                                                               
-data.scores <- data.scores[-c(155, 158),]
-
-focal.gg <- ggplot(data = data.scores, aes(x = NMDS1, y = NMDS2)) + 
-  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
-  geom_point(data = data.scores, aes(shape = Species), size = 3, alpha = 0.5, show.legend = FALSE) + 
-  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
-        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
-        axis.ticks = element_blank(), legend.key = element_blank(),
-        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
-        legend.text = element_text(size = 9, colour = "grey30")) + 
-  scale_size_manual(values = c(0.2,0.2))
-
-focal.gg
-#####
-
-# db-rda for diet overlap between species
-#####
-focal.interact.species <- capscale(zbj.focal[1:944] ~ zbj.focal$Species, distance = "jaccard", add = TRUE)
-anova(focal.interact.species, step = 1000, perm.max = 1000)
-
-focal.interact.season <- capscale(zbj.focal[1:944] ~ zbj.focal$Season, distance = "jaccard", add = TRUE)
-anova(focal.interact.season, step = 1000, perm.max = 1000)
-
-focal.interact.location <- capscale(zbj.focal[1:944] ~ zbj.focal$Location, distance = "jaccard", add = TRUE)
-anova(focal.interact.location, step = 1000, perm.max = 1000)
-
-focal.interact.all <- capscale(zbj.focal[1:944] ~ Species + Season + Location, data = zbj.focal[946:948], distance = "jaccard", add = TRUE)
-plot(focal.interact.all)
-output <- anova(focal.interact.all, step = 1000, perm.max = 1000)
-
-vec = output$SumOfSqs/sum(output$SumOfSqs)*100
-table = output
-table$SumOfSqs = vec
-table
-
-anova(focal.interact.all, by="axis", perm.max=500)
-
-output2 <- anova(focal.interact.all, by="terms", permu=200)
-vec2 = output2$SumOfSqs/sum(output2$SumOfSqs)*100
-table2 = output2
-table2$SumOfSqs = vec2
-table2
-#####
-
-# ordination for diet overlap between seasons and locations for each species
-#####
-new.data.scores <- data.scores
-new.data.scores <- cbind(new.data.scores, paste(new.data.scores$Location, "-", new.data.scores$Season))
-colnames(new.data.scores) <- c("NMDS1", "NMDS2", "Species", "Location", "Season", "Location - Season")
-
-new.data.scores$`Location - Season` <- factor(new.data.scores$`Location - Season`,
-                                              levels = c("Konye - wet", "Konye - dry",
-                                                         "Ayos - wet", "Ayos - dry",
-                                                         "Bokito - wet", "Bokito - dry"))
-
-colnames(new.data.scores) <- c("NMDS1", "NMDS2", "Species", "Location", "Season", "Location - Season")
-
-LS.list <- unique(new.data.scores$`Location - Season`)
-LS.list <- factor(LS.list, levels = c("Konye - wet", "Konye - dry",
-                                      "Ayos - wet", "Ayos - dry",
-                                      "Bokito - wet", "Bokito - dry"))
-
-ordination.label <- c()
-for (LS in LS.list) {
-  NDS <- new.data.scores[new.data.scores$`Location - Season`==LS,]
-  
-  for (sp in unique(new.data.scores$Species)) {
-    NDS.species <- NDS[NDS$Species==sp,]
-    ordination.label <- append(ordination.label, length(NDS.species$Species))
-  }
+filter.cols <- function(x, y, z) {                 
+  z <- c()                                          
+  for (col in 1:ncol(x)) {                         
+    which.col <- which(x[,col] < y)                
+    if (length(which.col)==length(x[,col])) {      
+      z <- append(z, col) 
+    }                                               
+  } 
+  return(z)
 }
 
-label.df <- data.frame(Species = rep(unique(new.data.scores$Species), times = 3),
-                       Place = LS.list,
-                       Count = ordination.label)
+zbj.focal.RRA.cut <- filter.cols(zbj.focal.RRA[1:950], 0.000001, z)
+new.zbj.rra <- zbj.focal.RRA[,-c(zbj.focal.RRA.cut)]
 
-focal.gg2 <- ggplot(data = new.data.scores, aes(x = NMDS1, y = NMDS2)) + 
-  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
-  geom_point(data = new.data.scores, aes(shape = Species,), size = 3, alpha = 0.5, show.legend = FALSE) + 
-  scale_size_manual(values = c(0.2,0.2)) + facet_wrap(vars(`Location - Season`), ncol = 2) +
-  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
-        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
-        axis.ticks = element_blank(), legend.key = element_blank(),
-        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
-        legend.text = element_text(size = 9, colour = "grey30"),
-        panel.spacing = unit(0.5, "cm", data = NULL),
-        strip.background = element_blank()) 
-#####
-
-# db-rda for diet overlap between seasons and locations for each species
-#####
-new.zbj.focal <- zbj.focal
-new.zbj.focal <- cbind(new.zbj.focal, paste(new.zbj.focal$Location, "-", new.zbj.focal$Season))
-colnames(new.zbj.focal) <- c(names(zbj.focal), "Location - Season")
-
-capscale.function <- function(df) {
-  
-  focal.interact <- capscale(df[1:944] ~ df$Species, distance = "jaccard", add = TRUE)
-  interact.output <- anova(focal.interact, step = 1000, perm.max = 200)
-  
-  vec = interact.output$SumOfSqs/sum(interact.output$SumOfSqs)*100
-  table = interact.output
-  table$SumOfSqs = vec
-  table
-
-  return(table)
-}
-
-KonyeWet.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Konye - wet",]) 
-KonyeDry.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Konye - dry",]) 
-AyosWet.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Ayos - wet",]) 
-AyosDry.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Ayos - dry",]) 
-BokitoWet.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Bokito - wet",]) 
-BokitoDry.rda <- capscale.function(new.zbj.focal[new.zbj.focal$`Location - Season`=="Bokito - dry",]) 
-#####
-
-
-# repeat for RRA data
-focal.nmds <- metaMDS(zbj.focal.RRA[1:944], distance = "jaccard")
-plot(focal.nmds, type = "t", main = paste("NMDS/Jaccard - Stress = ",                       
-                                          round(focal.nmds$stress, 3)))                     
-
-focal.envfit <- envfit(focal.nmds, focal.info, permutations = 999, na.rm = TRUE)            
-plot(focal.envfit)                                                                          
-
-en_coord_cat <- as.data.frame(scores(focal.envfit, "factors")) 
-
-data.scores <- as.data.frame(scores(focal.nmds))
-data.scores <- cbind(data.scores, focal.info)                                               
-
-data.scores <- data.scores[-c(155, 158),]
-
-focal.gg <- ggplot(data = data.scores, aes(x = NMDS1, y = NMDS2)) + 
-  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
-  geom_point(data = data.scores, aes(shape = Species), size = 3, alpha = 0.5, show.legend = FALSE) + 
-  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
-        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
-        axis.ticks = element_blank(), legend.key = element_blank(),
-        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
-        legend.text = element_text(size = 9, colour = "grey30")) + 
-  scale_size_manual(values = c(0.2,0.2))
-
-focal.gg
-#####
-
-# db-rda for diet overlap between species
-#####
-focal.interact.species <- capscale(zbj.focal.RRA[1:944] ~ zbj.focal.RRA$Species, distance = "jaccard", add = TRUE)
-anova(focal.interact.species, step = 1000, perm.max = 1000)
-
-focal.interact.season <- capscale(zbj.focal.RRA[1:944] ~ zbj.focal.RRA$Season, distance = "jaccard", add = TRUE)
-anova(focal.interact.season, step = 1000, perm.max = 1000)
-
-focal.interact.location <- capscale(zbj.focal.RRA[1:944] ~ zbj.focal.RRA$Location, distance = "jaccard", add = TRUE)
-anova(focal.interact.location, step = 1000, perm.max = 1000)
-
-focal.interact.all <- capscale(zbj.focal.RRA[1:944] ~ Species + Season + Location, data = zbj.focal.RRA[946:948], distance = "jaccard", add = TRUE)
-plot(focal.interact.all)
-output <- anova(focal.interact.all, step = 1000, perm.max = 1000)
-
-vec = output$SumOfSqs/sum(output$SumOfSqs)*100
-table = output
-table$SumOfSqs = vec
-table
-
-anova(focal.interact.all, by="axis", perm.max=500)
-
-output2 <- anova(focal.interact.all, by="terms", permu=200)
-vec2 = output2$SumOfSqs/sum(output2$SumOfSqs)*100
-table2 = output2
-table2$SumOfSqs = vec2
-table2
-#####
-
-# ordination for diet overlap between seasons and locations for each species
-#####
-new.data.scores <- data.scores
-new.data.scores <- cbind(new.data.scores, paste(new.data.scores$Location, "-", new.data.scores$Season))
-colnames(new.data.scores) <- c("NMDS1", "NMDS2", "Species", "Location", "Season", "Location - Season")
-
-new.data.scores$`Location - Season` <- factor(new.data.scores$`Location - Season`,
-                                              levels = c("Konye - wet", "Konye - dry",
-                                                         "Ayos - wet", "Ayos - dry",
-                                                         "Bokito - wet", "Bokito - dry"))
-
-colnames(new.data.scores) <- c("NMDS1", "NMDS2", "Species", "Location", "Season", "Location - Season")
-
-LS.list <- unique(new.data.scores$`Location - Season`)
-LS.list <- factor(LS.list, levels = c("Konye - wet", "Konye - dry",
-                                      "Ayos - wet", "Ayos - dry",
-                                      "Bokito - wet", "Bokito - dry"))
-
-ordination.label <- c()
-for (LS in LS.list) {
-  NDS <- new.data.scores[new.data.scores$`Location - Season`==LS,]
-  
-  for (sp in unique(new.data.scores$Species)) {
-    NDS.species <- NDS[NDS$Species==sp,]
-    ordination.label <- append(ordination.label, length(NDS.species$Species))
-  }
-}
-
-label.df <- data.frame(Species = rep(unique(new.data.scores$Species), times = 3),
-                       Place = LS.list,
-                       Count = ordination.label)
-
-focal.gg2 <- ggplot(data = new.data.scores, aes(x = NMDS1, y = NMDS2)) + 
-  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
-  geom_point(data = new.data.scores, aes(shape = Species,), size = 3, alpha = 0.5, show.legend = FALSE) + 
-  scale_size_manual(values = c(0.2,0.2)) + facet_wrap(vars(`Location - Season`), ncol = 2) +
-  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
-        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
-        axis.ticks = element_blank(), legend.key = element_blank(),
-        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
-        legend.text = element_text(size = 9, colour = "grey30"),
-        panel.spacing = unit(0.5, "cm", data = NULL),
-        strip.background = element_blank()) 
-#####
-
-# db-rda for diet overlap between seasons and locations for each species
-#####
-new.zbj.focal.RRA <- zbj.focal.RRA
-new.zbj.focal.RRA <- cbind(new.zbj.focal.RRA, paste(new.zbj.focal.RRA$Location, "-", new.zbj.focal.RRA$Season))
-colnames(new.zbj.focal.RRA) <- c(names(zbj.focal.RRA), "Location - Season")
-
-capscale.function <- function(df) {
-  
-  focal.interact <- capscale(df[1:944] ~ df$Species, distance = "jaccard", add = TRUE)
-  interact.output <- anova(focal.interact, step = 1000, perm.max = 200)
-  
-  vec = interact.output$SumOfSqs/sum(interact.output$SumOfSqs)*100
-  table = interact.output
-  table$SumOfSqs = vec
-  table
-  
-  return(table)
-}
-
-KonyeWet.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Konye - wet",]) 
-KonyeDry.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Konye - dry",]) 
-AyosWet.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Ayos - wet",]) 
-AyosDry.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Ayos - dry",]) 
-BokitoWet.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Bokito - wet",]) 
-BokitoDry.rda <- capscale.function(new.zbj.focal.RRA[new.zbj.focal.RRA$`Location - Season`=="Bokito - dry",]) 
-
+zbj.focal.cut <- filter.cols(zbj.focal[1:950], 1, z)
+new.zbj.focal <- zbj.focal[,-c(zbj.focal.cut)]
 # total number of reads for all species == OTU.sum
 #####
 insect.data.reads <- insect.data[,-c(1,269:277)]          
@@ -806,7 +557,7 @@ count.OTUs <- function(df) {
 #####
 HR.count.OTUs <- count.OTUs(HR.focal.df[,1:79])
 RA.count.OTUs <- count.OTUs(RA.focal.df[,1:82])
-
+library(ggplot2)
 focal.compare.OTUs.df <- data.frame(Species = c(rep("H.ruber", times = length(HR.count.OTUs)),
                                                 rep("R.alcyone", times = length(RA.count.OTUs))),
                                     Counts = c(HR.count.OTUs, RA.count.OTUs))
@@ -1324,6 +1075,8 @@ shapiro.test(c(PA.shannon$Counts, RRA.shannon$Counts))
 wilcox.test(PA.Levins$Counts, RRA.Levins$Counts)
 #####
 
+# Pianka's niche overlap index
+#####
 library(EcoSimR)
 
 pianka.null.function <- function(HR.df, RA.df) {
@@ -1405,6 +1158,291 @@ wilcox.test(c(HR.KW.wPOO.pianka, HR.KD.wPOO.pianka,
          HR.AW.wPOO.pianka, HR.AD.wPOO.pianka), 
        c(HR.KW.RRA.pianka, HR.KD.RRA.pianka,
          HR.AW.RRA.pianka, HR.AD.RRA.pianka))
+#####
+
+# db-rda
+# with presence/absence data
+LS.new.zbj.focal <- new.zbj.focal
+LS.new.zbj.focal <- cbind(LS.new.zbj.focal, paste(LS.new.zbj.focal$Location, "-", LS.new.zbj.focal$Season))
+colnames(LS.new.zbj.focal) <- c(names(new.zbj.focal), "Location - Season")
+
+capscale.function <- function(df) {
+  
+  focal.interact <- capscale(df[1:838] ~ df$Species, distance = "jaccard", add = TRUE)
+  interact.output <- anova(focal.interact, step = 1000, perm.max = 200)
+  
+  vec = interact.output$SumOfSqs/sum(interact.output$SumOfSqs)*100
+  table = interact.output
+  table$SumOfSqs = vec
+  table
+  
+  return(table)
+}
+
+KonyeWet.rda <- capscale.function(LS.new.zbj.focal[LS.new.zbj.focal$`Location - Season`=="Konye - wet",]) 
+KonyeDry.rda <- capscale.function(LS.new.zbj.focal[LS.new.zbj.focal$`Location - Season`=="Konye - dry",]) 
+AyosWet.rda <- capscale.function(LS.new.zbj.focal[LS.new.zbj.focal$`Location - Season`=="Ayos - wet",]) 
+AyosDry.rda <- capscale.function(LS.new.zbj.focal[LS.new.zbj.focal$`Location - Season`=="Ayos - dry",]) 
+BokitoWet.rda <- capscale.function(LS.new.zbj.focal[LS.new.zbj.focal$`Location - Season`=="Bokito - wet",]) 
+BokitoDry.rda <- capscale.function(LS.new.zbj.focal[LS.new.zbj.focal$`Location - Season`=="Bokito - dry",]) 
+
+# with RRA data
+LS.new.zbj.rra <- new.zbj.rra
+LS.new.zbj.rra <- cbind(LS.new.zbj.rra, paste(LS.new.zbj.rra$Location, "-", LS.new.zbj.rra$Season))
+colnames(LS.new.zbj.rra) <- c(names(new.zbj.rra), "Location - Season")
+
+capscale.function <- function(df) {
+  
+  focal.interact <- capscale(df[1:838] ~ df$Species, distance = "jaccard", add = TRUE)
+  interact.output <- anova(focal.interact, step = 1000, perm.max = 200)
+  
+  vec = interact.output$SumOfSqs/sum(interact.output$SumOfSqs)*100
+  table = interact.output
+  table$SumOfSqs = vec
+  table
+  
+  return(table)
+}
+
+KonyeWet.rda <- capscale.function(LS.new.zbj.rra[LS.new.zbj.rra$`Location - Season`=="Konye - wet",]) 
+KonyeDry.rda <- capscale.function(LS.new.zbj.rra[LS.new.zbj.rra$`Location - Season`=="Konye - dry",]) 
+AyosWet.rda <- capscale.function(LS.new.zbj.rra[LS.new.zbj.rra$`Location - Season`=="Ayos - wet",]) 
+AyosDry.rda <- capscale.function(LS.new.zbj.rra[LS.new.zbj.rra$`Location - Season`=="Ayos - dry",]) 
+BokitoWet.rda <- capscale.function(LS.new.zbj.rra[LS.new.zbj.rra$`Location - Season`=="Bokito - wet",]) 
+BokitoDry.rda <- capscale.function(LS.new.zbj.rra[LS.new.zbj.rra$`Location - Season`=="Bokito - dry",]) 
+
+# ordination plot for diet overlap between species
+#####
+library(vegan)                                                                              
+library(dplyr)                                                                              
+library(ggplot2)                                                                            
+library(ggalt)                                                                              
+library(ggforce)                                                                            
+library(concaveman) 
+
+# presence/absence NMDS
+# between species
+#####
+new.zbj.focal <- new.zbj.focal[-c(which(new.zbj.focal$Location=="Bokito")),]
+new.focal.info <- focal.info[-c(which(focal.info$Location=="Bokito")),]
+
+focal.nmds <- metaMDS(new.zbj.focal[1:838], distance = "jaccard", k = 3, 
+                      trymax=100, trace = FALSE)
+plot(focal.nmds, main = paste("NMDS/Jaccard - Stress = ",                       
+                              round(focal.nmds$stress, 3)))  
+stressplot(focal.nmds)
+
+focal.envfit <- envfit(focal.nmds, focal.info, permutations = 999, na.rm = TRUE)            
+plot(focal.envfit)                                                                          
+
+en_coord_cat <- as.data.frame(scores(focal.envfit, "factors")) 
+
+data.scores <- as.data.frame(scores(focal.nmds))
+data.scores <- cbind(data.scores, new.focal.info)
+rownames(data.scores) <- c(1:152)
+
+data.scores <- data.scores[-c(146, 149),]
+
+focal.gg <- ggplot(data = data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
+  geom_point(data = data.scores, aes(shape = Species), size = 3, alpha = 0.5, show.legend = FALSE) + 
+  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+        axis.ticks = element_blank(), legend.key = element_blank(),
+        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        legend.text = element_text(size = 9, colour = "grey30")) + 
+  scale_size_manual(values = c(0.2,0.2))
+
+focal.gg
+#####
+
+# between each location-season
+#####
+new.data.scores <- as.data.frame(data.scores)
+new.data.scores <- cbind(new.data.scores, paste(new.data.scores$Location, "-", new.data.scores$Season))
+colnames(new.data.scores) <- c("NMDS1", "NMDS2", "NMDS3", "Species", "Location", "Season", "Location - Season")
+
+new.data.scores$`Location - Season` <- factor(new.data.scores$`Location - Season`,
+                                              levels = c("Konye - wet", "Konye - dry",
+                                                         "Ayos - wet", "Ayos - dry"))
+
+ordination.label <- c()
+for (LS in LS.list) {
+  NDS <- new.data.scores[new.data.scores$`Location - Season`==LS,]
+  
+  for (sp in unique(new.data.scores$Species)) {
+    NDS.species <- NDS[NDS$Species==sp,]
+    ordination.label <- append(ordination.label, length(NDS.species$Species))
+  }
+}
+
+label.df <- data.frame(Species = rep(unique(new.data.scores$Species), times = 3),
+                       Place = LS.list,
+                       Count = ordination.label)
+
+focal.gg2 <- ggplot(data = new.data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
+  geom_point(data = new.data.scores, aes(shape = Species,), size = 3, alpha = 0.5, show.legend = FALSE) + 
+  scale_size_manual(values = c(0.2,0.2)) + facet_wrap(vars(`Location - Season`), ncol = 2) +
+  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+        axis.ticks = element_blank(), legend.key = element_blank(),
+        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        legend.text = element_text(size = 9, colour = "grey30"),
+        panel.spacing = unit(0.5, "cm", data = NULL),
+        strip.background = element_blank()) 
+
+focal.gg2
+#####
+
+# NMDS with wPOO summaries
+#####
+wPOO.matrix <- matrix(c(HR.KW.focal.df$wPOO, HR.KD.focal.df$wPOO,
+                        HR.AW.focal.df$wPOO, HR.AD.focal.df$wPOO,
+                        RA.KW.focal.df$wPOO, RA.KD.focal.df$wPOO,
+                        RA.AW.focal.df$wPOO, RA.AD.focal.df$wPOO), nrow = 8)
+
+wPOO.info <- data.frame(Species = c(rep("H. ruber", times = 4),
+                                    rep("R. alcyone", times = 4)),
+                        LS = rep(c("Konye - wet", "Konye - dry",
+                               "Ayos - wet", "Ayos - dry"), times = 2))
+
+wPOO.nmds <- metaMDS(wPOO.matrix, distance = "jaccard", k = 2, 
+                      trymax=100, trace = FALSE)
+
+plot(wPOO.nmds, main = paste("NMDS/Jaccard - Stress = ",                       
+                              round(wPOO.nmds$stress, 3)))  
+stressplot(wPOO.nmds)
+
+wPOO.envfit <- envfit(wPOO.nmds, wPOO.info, permutations = 999, na.rm = TRUE)            
+plot(wPOO.envfit)                                                                          
+
+en_coord_cat <- as.data.frame(scores(focal.envfit, "factors"))
+
+wPOO.data.scores <- as.data.frame(scores(wPOO.nmds))
+wPOO.data.scores <- cbind(data.scores, wPOO.info) 
+
+wPOO.nmds.graph <- ggplot(data = wPOO.data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species), alpha = 0.1) +
+  geom_point(data = wPOO.data.scores, aes(shape = Species), size = 3, alpha = 0.5, show.legend = FALSE) + 
+  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+        axis.ticks = element_blank(), legend.key = element_blank(),
+        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        legend.text = element_text(size = 9, colour = "grey30")) 
+
+wPOO.nmds.graph
+#####
+
+# RRA NMDS
+# between species
+#####
+new.zbj.rra <- new.zbj.rra[-c(which(new.zbj.rra$Location=="Bokito")),]
+
+focal.nmds <- metaMDS(new.zbj.rra[1:838], distance = "jaccard", k = 3, 
+                      trymax=100, trace = FALSE)
+plot(focal.nmds, main = paste("NMDS/Jaccard - Stress = ",                       
+                              round(focal.nmds$stress, 3)))  
+stressplot(focal.nmds)
+
+focal.envfit <- envfit(focal.nmds, new.focal.info, permutations = 999, na.rm = TRUE)            
+plot(focal.envfit)                                                                          
+
+en_coord_cat <- as.data.frame(scores(focal.envfit, "factors")) 
+
+data.scores <- as.data.frame(scores(focal.nmds))
+data.scores <- cbind(data.scores, new.focal.info)                                               
+rownames(data.scores) <- c(1:152)
+
+data.scores <- data.scores[-c(146, 149),]
+
+
+focal.gg <- ggplot(data = data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
+  geom_point(data = data.scores, aes(shape = Species), size = 3, alpha = 0.5, show.legend = FALSE) + 
+  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+        axis.ticks = element_blank(), legend.key = element_blank(),
+        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        legend.text = element_text(size = 9, colour = "grey30")) + 
+  scale_size_manual(values = c(0.2,0.2))
+
+focal.gg
+#####
+
+# between each location-season
+#####
+new.data.scores <- as.data.frame(data.scores)
+new.data.scores <- cbind(new.data.scores, paste(new.data.scores$Location, "-", new.data.scores$Season))
+colnames(new.data.scores) <- c("NMDS1", "NMDS2", "NMDS3", "Species", "Location", "Season", "Location - Season")
+
+new.data.scores$`Location - Season` <- factor(new.data.scores$`Location - Season`,
+                                              levels = c("Konye - wet", "Konye - dry",
+                                                         "Ayos - wet", "Ayos - dry",
+                                                         "Bokito - wet", "Bokito - dry"))
+
+ordination.label <- c()
+for (LS in LS.list) {
+  NDS <- new.data.scores[new.data.scores$`Location - Season`==LS,]
+  
+  for (sp in unique(new.data.scores$Species)) {
+    NDS.species <- NDS[NDS$Species==sp,]
+    ordination.label <- append(ordination.label, length(NDS.species$Species))
+  }
+}
+
+label.df <- data.frame(Species = rep(unique(new.data.scores$Species), times = 3),
+                       Place = LS.list,
+                       Count = ordination.label)
+
+focal.gg2 <- ggplot(data = new.data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species, size = Species), alpha = 0.1) +
+  geom_point(data = new.data.scores, aes(shape = Species,), size = 3, alpha = 0.5, show.legend = FALSE) + 
+  scale_size_manual(values = c(0.2,0.2)) + facet_wrap(vars(`Location - Season`), ncol = 2) +
+  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+        axis.ticks = element_blank(), legend.key = element_blank(),
+        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        legend.text = element_text(size = 9, colour = "grey30"),
+        panel.spacing = unit(0.5, "cm", data = NULL),
+        strip.background = element_blank()) 
+
+focal.gg2
+#####
+
+# NMDS with RRA summaries
+#####
+RRA.matrix <- matrix(c(HR.KW.focal.df$RRA, HR.KD.focal.df$RRA,
+                        HR.AW.focal.df$RRA, HR.AD.focal.df$RRA,
+                        RA.KW.focal.df$RRA, RA.KD.focal.df$RRA,
+                        RA.AW.focal.df$RRA, RA.AD.focal.df$RRA), nrow = 8)
+
+RRA.info <- data.frame(Species = c(rep("H. ruber", times = 4),
+                                    rep("R. alcyone", times = 4)),
+                        LS = rep(c("Konye - wet", "Konye - dry",
+                                   "Ayos - wet", "Ayos - dry"), times = 2))
+
+RRA.nmds <- metaMDS(RRA.matrix, distance = "jaccard", k = 2, 
+                     trymax=100, trace = FALSE)
+
+plot(RRA.nmds, main = paste("NMDS/Jaccard - Stress = ",                       
+                             round(RRA.nmds$stress, 3)))  
+stressplot(RRA.nmds)
+
+RRA.data.scores <- as.data.frame(scores(RRA.nmds))
+RRA.data.scores <- cbind(data.scores, RRA.info) 
+
+RRA.nmds.graph <- ggplot(data = RRA.data.scores, aes(x = NMDS1, y = NMDS2)) + 
+  geom_mark_ellipse(expand=0, aes(fill=Species, colour = Species), alpha = 0.1) +
+  geom_point(data = RRA.data.scores, aes(shape = Species), size = 3, alpha = 0.5, show.legend = FALSE) + 
+  theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+        axis.ticks = element_blank(), legend.key = element_blank(),
+        legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+        legend.text = element_text(size = 9, colour = "grey30")) 
+
+RRA.nmds.graph
+#####
 
 # Occurrence of pest sequences
 pest.data <- readxl::read_xlsx("C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\Pest sequences.xlsx")
