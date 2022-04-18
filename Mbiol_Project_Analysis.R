@@ -1193,7 +1193,7 @@ colnames(LS.new.zbj.rra) <- c(names(new.zbj.rra), "Location - Season")
 
 capscale.function <- function(df) {
   
-  focal.interact <- capscale(df[1:838] ~ df$Species, distance = "jaccard", add = TRUE)
+  focal.interact <- capscale(df[1:838] ~ df$Species, distance = "bray", add = TRUE)
   interact.output <- anova(focal.interact, step = 1000, perm.max = 200)
   
   vec = interact.output$SumOfSqs/sum(interact.output$SumOfSqs)*100
