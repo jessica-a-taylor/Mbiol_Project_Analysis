@@ -1704,3 +1704,49 @@ HR.AD.cocoa.pests <- find.pests(HR.AD.pest.df)
 HR.AD.cocoa.pests <- HR.AD.pest.df[c(HR.AD.cocoa.pests),]
 
 ######
+
+# is there a difference in the time the bats were caught
+light.data <- readxl::read_xlsx("C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\Copy of Light conditions.xlsx")
+light.data <- as.data.frame(light.data)
+
+HR.light <- light.data[c(which(light.data$Species=="Hrub")),]
+HR.Konye.light <- HR.light[HR.light$Location=="Konye",]
+HR.Ayos.light <- HR.light[HR.light$Location=="Ayos",]
+HR.Bokito.light <- HR.light[HR.light$Location=="Bokito",]
+
+RA.light <- light.data[c(which(light.data$Species=="Ralc")),]
+RA.Konye.light <- RA.light[RA.light$Location=="Konye",]
+RA.Ayos.light <- RA.light[RA.light$Location=="Ayos",]
+RA.Bokito.light <- RA.light[RA.light$Location=="Bokito",]
+
+nightTime <- c("18hr", "19hr", "20hr", "21hr", "22hr", "23hr", "00hr", "1hr")
+
+lightFreq.function <- function(df) {
+  timeFreq <- c()
+  for (time in nightTime) {
+    timeFreq <- append(timeFreq, length(which(df$Time==time)))
+  }
+  return(timeFreq)
+}
+
+allTimeFreq <- data.frame(Species = rep(c("H. ruber", "R. alcyone"), each = length(nightTime)*3),
+                          Location = rep(c("Konye", "Ayos", "Bokito"), each = length(nightTime), times = 2),
+                          Time = rep(nightTime, times = 6),
+                          Freq. = c(lightFreq.function(HR.Konye.light),
+                                    lightFreq.function(HR.Ayos.light),
+                                    lightFreq.function(HR.Bokito.light),
+                                    lightFreq.function(RA.Konye.light),
+                                    lightFreq.function(RA.Ayos.light),
+                                    lightFreq.function(RA.Bokito.light)))
+
+allTimeFreq$Time <- factor(allTimeFreq$Time, levels = nightTime)
+
+light.plot <- ggplot(allTimeFreq, aes(x = Time, y = Freq., fill = Species)) +
+  geom_bar(stat = "identity", position = "dodge") + theme_minimal()  +
+  facet_wrap(vars(Location))
+
+
+
+focal.light.data <- readxl::read_xlsx("C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\Light conditions.xlsx")
+focal.light.data <- as.data.frame(focal.light.data)
+
