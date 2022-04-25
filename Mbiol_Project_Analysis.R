@@ -412,43 +412,43 @@ HR.KW.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Konye - wet"
 HR.KW.nbrs <- HR.KW.data$Lab.nbr
 
 HR.KW.focal.df <- HR.focal.df[,c(as.character(HR.KW.nbrs))]
-HR.KW.focal.cut <- filter.rows(HR.KW.focal.df[,1:13], 1, z)
-HR.KW.focal.cut <- HR.KW.focal.df[-c(HR.KW.focal.cut),]
+HR.KW.focal.trim <- filter.rows(HR.KW.focal.df[,1:13], 1, z)
+HR.KW.focal.cut <- HR.KW.focal.df[-c(HR.KW.focal.trim),]
 
 HR.KD.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Konye - dry",]
 HR.KD.nbrs <- HR.KD.data$Lab.nbr
 
 HR.KD.focal.df <- HR.focal.df[,c(as.character(HR.KD.nbrs))]
-HR.KD.focal.cut <- filter.rows(HR.KD.focal.df[,1:24], 1, z)
-HR.KD.focal.cut <- HR.KD.focal.df[-c(HR.KD.focal.cut),]
+HR.KD.focal.trim <- filter.rows(HR.KD.focal.df[,1:24], 1, z)
+HR.KD.focal.cut <- HR.KD.focal.df[-c(HR.KD.focal.trim),]
 
 HR.AW.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Ayos - wet",]
 HR.AW.nbrs <- HR.AW.data$Lab.nbr
 
 HR.AW.focal.df <- HR.focal.df[,c(as.character(HR.AW.nbrs))]
-HR.AW.focal.cut <- filter.rows(HR.AW.focal.df[,1:10], 1, z)
-HR.AW.focal.cut <- HR.AW.focal.df[-c(HR.AW.focal.cut),]
+HR.AW.focal.trim <- filter.rows(HR.AW.focal.df[,1:10], 1, z)
+HR.AW.focal.cut <- HR.AW.focal.df[-c(HR.AW.focal.trim),]
 
 HR.AD.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Ayos - dry",]
 HR.AD.nbrs <- HR.AD.data$Lab.nbr
 
 HR.AD.focal.df <- HR.focal.df[,c(as.character(HR.AD.nbrs))]
-HR.AD.focal.cut <- filter.rows(HR.AD.focal.df[,1:25], 1, z)
-HR.AD.focal.cut <- HR.AD.focal.df[-c(HR.AD.focal.cut),]
+HR.AD.focal.trim <- filter.rows(HR.AD.focal.df[,1:25], 1, z)
+HR.AD.focal.cut <- HR.AD.focal.df[-c(HR.AD.focal.trim),]
 
 HR.BW.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Bokito - wet",]
 HR.BW.nbrs <- HR.BW.data$Lab.nbr
 
 HR.BW.focal.df <- HR.focal.df[,c(as.character(HR.BW.nbrs))]
-HR.BW.focal.cut <- filter.rows(HR.BW.focal.df[,1:4], 1, z)
-HR.BW.focal.cut <- HR.BW.focal.df[-c(HR.BW.focal.cut),]
+HR.BW.focal.trim <- filter.rows(HR.BW.focal.df[,1:4], 1, z)
+HR.BW.focal.cut <- HR.BW.focal.df[-c(HR.BW.focal.trim),]
 
 HR.BD.data <- new.HR.zbj.data[new.HR.zbj.data$`Location - Season`=="Bokito - dry",]
 HR.BD.nbrs <- HR.BD.data$Lab.nbr
 
 HR.BD.focal.df <- HR.focal.df[,c(as.character(HR.BD.nbrs))]
-HR.BD.focal.cut <- filter.rows(HR.BD.focal.df[,1:3], 1, z)
-HR.BD.focal.cut <- HR.BD.focal.df[-c(HR.BD.focal.cut),]
+HR.BD.focal.trim <- filter.rows(HR.BD.focal.df[,1:3], 1, z)
+HR.BD.focal.cut <- HR.BD.focal.df[-c(HR.BD.focal.trim),]
 
 new.RA.zbj.data <- RA.zbj.data
 new.RA.zbj.data <- cbind(new.RA.zbj.data, paste(new.RA.zbj.data$Location, "-" ,new.RA.zbj.data$Season))
@@ -458,29 +458,29 @@ RA.KW.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Konye - wet"
 RA.KW.nbrs <- RA.KW.data$Lab.nbr
 
 RA.KW.focal.df <- RA.focal.df[,c(as.character(RA.KW.nbrs))]
-RA.KW.focal.cut <- filter.rows(RA.KW.focal.df[,1:29], 1, z)
-RA.KW.focal.cut <- RA.KW.focal.df[-c(RA.KW.focal.cut),]
+RA.KW.focal.trim <- filter.rows(RA.KW.focal.df[,1:29], 1, z)
+RA.KW.focal.cut <- RA.KW.focal.df[-c(RA.KW.focal.trim),]
 
 RA.KD.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Konye - dry",]
 RA.KD.nbrs <- RA.KD.data$Lab.nbr
 
 RA.KD.focal.df <- RA.focal.df[,c(as.character(RA.KD.nbrs))]
-RA.KD.focal.cut <- filter.rows(RA.KD.focal.df[,1:18], 1, z)
-RA.KD.focal.cut <- RA.KD.focal.df[-c(RA.KD.focal.cut),]
+RA.KD.focal.trim <- filter.rows(RA.KD.focal.df[,1:18], 1, z)
+RA.KD.focal.cut <- RA.KD.focal.df[-c(RA.KD.focal.trim),]
 
 RA.AW.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Ayos - wet",]
 RA.AW.nbrs <- RA.AW.data$Lab.nbr
 
 RA.AW.focal.df <- RA.focal.df[,c(as.character(RA.AW.nbrs))]
-RA.AW.focal.cut <- filter.rows(RA.AW.focal.df[,1:20], 1, z)
-RA.AW.focal.cut <- RA.AW.focal.df[-c(RA.AW.focal.cut),]
+RA.AW.focal.trim <- filter.rows(RA.AW.focal.df[,1:20], 1, z)
+RA.AW.focal.cut <- RA.AW.focal.df[-c(RA.AW.focal.trim),]
 
 RA.AD.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Ayos - dry",]
 RA.AD.nbrs <- RA.AD.data$Lab.nbr
 
 RA.AD.focal.df <- RA.focal.df[,c(as.character(RA.AD.nbrs))]
-RA.AD.focal.cut <- filter.rows(RA.AD.focal.df[,1:13], 1, z)
-RA.AD.focal.cut <- RA.AD.focal.df[-c(RA.AD.focal.cut),]
+RA.AD.focal.trim <- filter.rows(RA.AD.focal.df[,1:13], 1, z)
+RA.AD.focal.cut <- RA.AD.focal.df[-c(RA.AD.focal.trim),]
 
 RA.BW.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Bokito - wet",]
 RA.BW.nbrs <- RA.BW.data$Lab.nbr
@@ -496,44 +496,44 @@ RA.BD.focal.df <- RA.focal.df[,c(as.character(RA.BD.nbrs))]
 # RRA data for each location-season
 #####
 new.HR.KW.focal.df <- new.HR.focal.df[,c(as.character(HR.KW.nbrs))]
-new.HR.KW.focal.cut <- filter.rows(new.HR.KW.focal.df[,1:13], 0.000001, z)
-new.HR.KW.focal.cut <- new.HR.KW.focal.df[-c(new.HR.KW.focal.cut),]
+new.HR.KW.focal.trim <- filter.rows(new.HR.KW.focal.df[,1:13], 0.000001, z)
+new.HR.KW.focal.cut <- new.HR.KW.focal.df[-c(new.HR.KW.focal.trim),]
 
 new.HR.KD.focal.df <- new.HR.focal.df[,c(as.character(HR.KD.nbrs))]
-new.HR.KD.focal.cut <- filter.rows(new.HR.KD.focal.df[,1:24], 0.000001, z)
-new.HR.KD.focal.cut <- new.HR.KD.focal.df[-c(new.HR.KD.focal.cut),]
+new.HR.KD.focal.trim <- filter.rows(new.HR.KD.focal.df[,1:24], 0.000001, z)
+new.HR.KD.focal.cut <- new.HR.KD.focal.df[-c(new.HR.KD.focal.trim),]
 
 new.HR.AW.focal.df <- new.HR.focal.df[,c(as.character(HR.AW.nbrs))]
-new.HR.AW.focal.cut <- filter.rows(new.HR.AW.focal.df[,1:10], 0.000001, z)
-new.HR.AW.focal.cut <- new.HR.AW.focal.df[-c(new.HR.AW.focal.cut),]
+new.HR.AW.focal.trim <- filter.rows(new.HR.AW.focal.df[,1:10], 0.000001, z)
+new.HR.AW.focal.cut <- new.HR.AW.focal.df[-c(new.HR.AW.focal.trim),]
 
 new.HR.AD.focal.df <- new.HR.focal.df[,c(as.character(HR.AD.nbrs))]
-new.HR.AD.focal.cut <- filter.rows(new.HR.AD.focal.df[,1:25], 0.000001, z)
-new.HR.AD.focal.cut <- new.HR.AD.focal.df[-c(new.HR.AD.focal.cut),]
+new.HR.AD.focal.trim <- filter.rows(new.HR.AD.focal.df[,1:25], 0.000001, z)
+new.HR.AD.focal.cut <- new.HR.AD.focal.df[-c(new.HR.AD.focal.trim),]
 
 new.HR.BW.focal.df <- new.HR.focal.df[,c(as.character(HR.BW.nbrs))]
-new.HR.BW.focal.cut <- filter.rows(new.HR.BW.focal.df[,1:4], 1, z)
-new.HR.BW.focal.cut <- new.HR.BW.focal.df[-c(new.HR.BW.focal.cut),]
+new.HR.BW.focal.trim <- filter.rows(new.HR.BW.focal.df[,1:4], 1, z)
+new.HR.BW.focal.cut <- new.HR.BW.focal.df[-c(new.HR.BW.focal.trim),]
 
 new.HR.BD.focal.df <- new.HR.focal.df[,c(as.character(HR.BD.nbrs))]
-new.HR.BD.focal.cut <- filter.rows(new.HR.BD.focal.df[,1:3], 0.000001, z)
-new.HR.BD.focal.cut <- new.HR.BD.focal.df[-c(new.HR.BD.focal.cut),]
+new.HR.BD.focal.trim <- filter.rows(new.HR.BD.focal.df[,1:3], 0.000001, z)
+new.HR.BD.focal.cut <- new.HR.BD.focal.df[-c(new.HR.BD.focal.trim),]
 
 new.RA.KW.focal.df <- new.RA.focal.df[,c(as.character(RA.KW.nbrs))]
-new.RA.KW.focal.cut <- filter.rows(new.RA.KW.focal.df[,1:29], 1, z)
-new.RA.KW.focal.cut <- new.RA.KW.focal.df[-c(new.RA.KW.focal.cut),]
+new.RA.KW.focal.trim <- filter.rows(new.RA.KW.focal.df[,1:29], 1, z)
+new.RA.KW.focal.cut <- new.RA.KW.focal.df[-c(new.RA.KW.focal.trim),]
 
 new.RA.KD.focal.df <- new.RA.focal.df[,c(as.character(RA.KD.nbrs))]
-new.RA.KD.focal.cut <- filter.rows(new.RA.KD.focal.df[,1:18], 0.000001, z)
-new.RA.KD.focal.cut <- new.RA.KD.focal.df[-c(new.RA.KD.focal.cut),]
+new.RA.KD.focal.trim <- filter.rows(new.RA.KD.focal.df[,1:18], 0.000001, z)
+new.RA.KD.focal.cut <- new.RA.KD.focal.df[-c(new.RA.KD.focal.trim),]
 
 new.RA.AW.focal.df <- new.RA.focal.df[,c(as.character(RA.AW.nbrs))]
-new.RA.AW.focal.cut <- filter.rows(new.RA.AW.focal.df[,1:20], 0.000001, z)
-new.RA.AW.focal.cut <- new.RA.AW.focal.df[-c(new.RA.AW.focal.cut),]
+new.RA.AW.focal.trim <- filter.rows(new.RA.AW.focal.df[,1:20], 0.000001, z)
+new.RA.AW.focal.cut <- new.RA.AW.focal.df[-c(new.RA.AW.focal.trim),]
 
 new.RA.AD.focal.df <- new.RA.focal.df[,c(as.character(RA.AD.nbrs))]
-new.RA.AD.focal.cut <- filter.rows(new.RA.AD.focal.df[,1:13], 0.000001, z)
-new.RA.AD.focal.cut <- new.RA.AD.focal.df[-c(new.RA.AD.focal.cut),]
+new.RA.AD.focal.trim <- filter.rows(new.RA.AD.focal.df[,1:13], 0.000001, z)
+new.RA.AD.focal.cut <- new.RA.AD.focal.df[-c(new.RA.AD.focal.trim),]
 
 new.RA.BW.focal.df <- new.RA.focal.df[,c(as.character(RA.BW.nbrs))]
 
@@ -647,15 +647,19 @@ compare.OTUs.kruskal <- kruskal.test(data = focal.compare.OTUs.df, x = focal.com
 
 # occurrence calculations for focal species
 #####
-HR.KW.wPOO <- FOO.function(HR.KW.focal.df)
-HR.KD.wPOO <- POO.function(HR.KD.focal.df)
-HR.AW.wPOO <- FOO.function(HR.AW.focal.df)
-HR.AD.wPOO <- POO.function(HR.AD.focal.df)
+HR.KW.wPOO <- wPOO.function(HR.KW.focal.df)
+HR.KD.wPOO <- wPOO.function(HR.KD.focal.df)
+HR.AW.wPOO <- wPOO.function(HR.AW.focal.df)
+HR.AD.wPOO <- wPOO.function(HR.AD.focal.df)
+HR.BW.wPOO <- wPOO.function(HR.BW.focal.df)
+HR.BD.wPOO <- wPOO.function(HR.BD.focal.df)
 
-RA.KW.wPOO <- FOO.function(RA.KW.focal.df)
-RA.KD.wPOO <- POO.function(RA.KD.focal.df)
-RA.AW.wPOO <- FOO.function(RA.AW.focal.df)
-RA.AD.wPOO <- POO.function(RA.AD.focal.df)
+RA.KW.wPOO <- wPOO.function(RA.KW.focal.df)
+RA.KD.wPOO <- wPOO.function(RA.KD.focal.df)
+RA.AW.wPOO <- wPOO.function(RA.AW.focal.df)
+RA.AD.wPOO <- wPOO.function(RA.AD.focal.df)
+RA.BW.wPOO <- "NA"
+RA.BD.wPOO <- "NA"
 
 # relative read abundance
 # function for calculating RRA
@@ -684,6 +688,11 @@ HR.sum.read.counts <- RRA.function(new.HR.AW.focal.df)
 HR.AW.RRA <- (HR.sum.read.counts/length(ncol(new.HR.AW.focal.df)))*100
 HR.sum.read.counts <- RRA.function(new.HR.AD.focal.df)
 HR.AD.RRA <- (HR.sum.read.counts/length(ncol(new.HR.AD.focal.df)))*100
+HR.sum.read.counts <- RRA.function(new.HR.BW.focal.df)
+HR.BW.RRA <- (HR.sum.read.counts/length(ncol(new.HR.BW.focal.df)))*100
+HR.sum.read.counts <- RRA.function(new.HR.BD.focal.df)
+HR.BD.RRA <- (HR.sum.read.counts/length(ncol(new.HR.BD.focal.df)))*100
+
 
 RA.sum.read.counts <- RRA.function(new.RA.KW.focal.df)
 RA.KW.RRA <- (RA.sum.read.counts/length(ncol(new.RA.KW.focal.df)))*100
@@ -693,6 +702,8 @@ RA.sum.read.counts <- RRA.function(new.RA.AW.focal.df)
 RA.AW.RRA <- (RA.sum.read.counts/length(ncol(new.RA.AW.focal.df)))*100
 RA.sum.read.counts <- RRA.function(new.RA.AD.focal.df)
 RA.AD.RRA <- (RA.sum.read.counts/length(ncol(new.RA.AD.focal.df)))*100
+RA.BW.RRA <- "NA"
+RA.BD.RRA <- "NA"
 
 insect.data.order <- insect.data[,c(1,271:274)]
 
@@ -716,6 +727,16 @@ HR.AD.focal.df <- cbind(HR.AD.focal.df, data.frame(HR.AD.wPOO, HR.AD.RRA))
 colnames(HR.AD.focal.df) <- c(HR.AD.nbrs, "OTU", "order", "family", "genus", "species",
                               "wPOO", "RRA")
 
+HR.BW.focal.df <- cbind(HR.BW.focal.df, insect.data.order)
+HR.BW.focal.df <- cbind(HR.BW.focal.df, data.frame(HR.BW.wPOO, HR.BW.RRA))
+colnames(HR.BW.focal.df) <- c(HR.BW.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+HR.BD.focal.df <- cbind(HR.BD.focal.df, insect.data.order)
+HR.BD.focal.df <- cbind(HR.BD.focal.df, data.frame(HR.BD.wPOO, HR.BD.RRA))
+colnames(HR.BD.focal.df) <- c(HR.BD.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
 RA.KW.focal.df <- cbind(RA.KW.focal.df, insect.data.order)
 RA.KW.focal.df <- cbind(RA.KW.focal.df, data.frame(RA.KW.wPOO, RA.KW.RRA))
 colnames(RA.KW.focal.df) <- c(RA.KW.nbrs, "OTU", "order", "family", "genus", "species",
@@ -734,6 +755,16 @@ colnames(RA.AW.focal.df) <- c(RA.AW.nbrs, "OTU", "order", "family", "genus", "sp
 RA.AD.focal.df <- cbind(RA.AD.focal.df, insect.data.order)
 RA.AD.focal.df <- cbind(RA.AD.focal.df, data.frame(RA.AD.wPOO, RA.AD.RRA))
 colnames(RA.AD.focal.df) <- c(RA.AD.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+RA.BW.focal.df <- cbind(RA.BW.focal.df, insect.data.order)
+RA.BW.focal.df <- cbind(RA.BW.focal.df, data.frame(RA.BW.wPOO, RA.BW.RRA))
+colnames(RA.BW.focal.df) <- c(RA.BW.nbrs, "OTU", "order", "family", "genus", "species",
+                              "wPOO", "RRA")
+
+RA.BD.focal.df <- cbind(RA.BD.focal.df, insect.data.order)
+RA.BD.focal.df <- cbind(RA.BD.focal.df, data.frame(RA.BD.wPOO, RA.BD.RRA))
+colnames(RA.BD.focal.df) <- c(RA.BD.nbrs, "OTU", "order", "family", "genus", "species",
                               "wPOO", "RRA")
 
 new.HR.KW.focal.df <- cbind(new.HR.KW.focal.df, insect.data.order)
@@ -809,27 +840,6 @@ new.HR.top.order <- new.HR.top.order$order
 new.HR.top.families <- new.HR.focal.order[new.HR.focal.order$order==new.HR.top.order,]
 new.HR.top.families <- unique(new.HR.top.families$family)
 
-#####
-
-# diet composition - most common Lepidopteran families in each location and season
-#####
-HR.Lepidoptera <- HR.focal.df[HR.focal.df$order=="Lepidoptera",]
-HR.Lepidoptera.fam <- length(unique(HR.Lepidoptera$family))
-
-RA.wet.Lepidoptera <- RA.wet.focal.df[RA.wet.focal.df$order=="Lepidoptera",]
-RA.wet.Lepidoptera.fam <- unique(RA.wet.Lepidoptera$family)
-
-RA.dry.Lepidoptera <- RA.dry.focal.df[RA.dry.focal.df$order=="Lepidoptera",]
-RA.dry.Lepidoptera.fam <- unique(RA.dry.Lepidoptera$family)
-
-RA.Bokito.Lepidoptera <- RA.Bokito.focal.df[RA.Bokito.focal.df$order=="Lepidoptera",]
-RA.Bokito.Lepidoptera.fam <- unique(RA.Bokito.Lepidoptera$family)
-
-RA.Lepidopteran.location.fam <- list(Wet = RA.wet.Lepidoptera.fam,
-                                     Dry = RA.dry.Lepidoptera.fam)
-
-group.venn(RA.Lepidopteran.location.fam, label=FALSE,  lab.cex=1, cex = 1.5,
-           cat.cex = 1.5, cat.dist = 0.05, cat.pos = c(320, 400))
 #####
 
 # Shannon diversity 
@@ -1750,3 +1760,122 @@ light.plot <- ggplot(allTimeFreq, aes(x = Time, y = Freq., fill = Species)) +
 focal.light.data <- readxl::read_xlsx("C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\Light conditions.xlsx")
 focal.light.data <- as.data.frame(focal.light.data)
 
+
+# diet composition 
+# function to find most common Lepidopteran families in each location and season
+findLepidoptera <- function(df) {
+  lepidoptera_df <- df[df$order=="Lepidoptera",]
+  lepidoptera_fam <- unique(lepidoptera_df$family)
+  fam_na <- which(lepidoptera_fam=="NA")
+  
+  return(lepidoptera_fam[-fam_na])
+}
+#####
+
+HR.KW.focal.cut <- cbind(HR.KW.focal.cut, insect.data.order[-c(HR.KW.focal.trim),])
+HR.KD.focal.cut <- cbind(HR.KD.focal.cut, insect.data.order[-c(HR.KD.focal.trim),])
+HR.AW.focal.cut <- cbind(HR.AW.focal.cut, insect.data.order[-c(HR.AW.focal.trim),])
+HR.AD.focal.cut <- cbind(HR.AD.focal.cut, insect.data.order[-c(HR.AD.focal.trim),])
+HR.BW.focal.cut <- cbind(HR.BW.focal.cut, insect.data.order[-c(HR.BW.focal.trim),])
+HR.BD.focal.cut <- cbind(HR.BD.focal.cut, insect.data.order[-c(HR.BD.focal.trim),])
+
+HR.KW.focal.cut <- cbind(HR.KW.focal.cut, data.frame(HR.KW.wPOO[-c(HR.KW.focal.trim)], HR.KW.RRA[-c(HR.KW.focal.trim)]))
+colnames(HR.KW.focal.cut) <- c(HR.KW.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+
+HR.KD.focal.cut <- cbind(HR.KD.focal.cut, data.frame(HR.KD.wPOO[-c(HR.KD.focal.trim)], HR.KD.RRA[-c(HR.KD.focal.trim)]))
+colnames(HR.KD.focal.cut) <- c(HR.KD.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+
+HR.AW.focal.cut <- cbind(HR.AW.focal.cut, data.frame(HR.AW.wPOO[-c(HR.AW.focal.trim)], HR.AW.RRA[-c(HR.AW.focal.trim)]))
+colnames(HR.AW.focal.cut) <- c(HR.AW.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+
+HR.AD.focal.cut <- cbind(HR.AD.focal.cut, data.frame(HR.AD.wPOO[-c(HR.AD.focal.trim)], HR.AD.RRA[-c(HR.AD.focal.trim)]))
+colnames(HR.AD.focal.cut) <- c(HR.AD.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+
+HR.BW.focal.cut <- cbind(HR.BW.focal.cut, data.frame(HR.BW.wPOO[-c(HR.BW.focal.trim)], HR.BW.RRA[-c(HR.BW.focal.trim)]))
+colnames(HR.BW.focal.cut) <- c(HR.BW.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+
+HR.BD.focal.cut <- cbind(HR.BD.focal.cut, data.frame(HR.BD.wPOO[-c(HR.BD.focal.trim)], HR.BD.RRA[-c(HR.BD.focal.trim)]))
+colnames(HR.BD.focal.cut) <- c(HR.BD.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+
+
+HR.KW.fam <- findLepidoptera(HR.KW.focal.cut)
+HR.KD.fam <- findLepidoptera(HR.KD.focal.cut)
+HR.AW.fam <- findLepidoptera(HR.AW.focal.cut)
+HR.AD.fam <- findLepidoptera(HR.AD.focal.cut)
+HR.BW.fam <- findLepidoptera(HR.BW.focal.cut)
+HR.BD.fam <- findLepidoptera(HR.BD.focal.cut)
+
+HR_Lepidoptera <- list("Konye-wet" = HR.KW.fam,
+                       "Konye-dry" = HR.KD.fam,
+                       "Ayos-wet" = HR.AW.fam,
+                       "Ayos-dry" = HR.AD.fam,
+                       "Bokito-wet" = HR.BW.fam,
+                       "Bokito-dry" = HR.BD.fam)
+
+allLepidoptera <- insect.data.order[insect.data.order$order=="Lepidoptera",]
+allLepidoptera <- unique(allLepidoptera$family)
+allLepidoptera <- allLepidoptera[-c(which(allLepidoptera=="NA"))]
+
+lepidopteraYesNo <- matrix(ncol = 0, nrow = 35)
+
+for (l in HR_Lepidoptera) {
+  YesNo <- c()
+  for (all in allLepidoptera) {
+    ifelse(all %in% l, YesNo <- append(YesNo, 1), YesNo <- append(YesNo, 0))
+  }
+  lepidopteraYesNo <- cbind(lepidopteraYesNo, YesNo)
+}
+
+colnames(lepidopteraYesNo) <- c("Konye-wet", "Konye-dry", "Ayos-wet",
+                                "Ayos-dry", "Bokito-wet", "Bokito-dry")
+rownames(lepidopteraYesNo) <- allLepidoptera
+
+lepidopteraCut <- filter.rows(lepidopteraYesNo, 1, z)
+lepidopteraYesNo <- lepidopteraYesNo[-c(lepidopteraCut),]
+
+rowSum <- c()
+for (row in 1:nrow(lepidopteraYesNo)) {
+  rowSum <- append(rowSum, sum(lepidopteraYesNo[row,]))
+}
+
+lepidopteraYesNo <- cbind(lepidopteraYesNo, rowSum)
+#lepidopteraYesNo <- lepidopteraYesNo[order(lepidopteraYesNo[,7]),]
+#lepidopteraYesNo <- lepidopteraYesNo[,-7]
+
+allLepidopteraCut <- allLepidoptera[-c(lepidopteraCut)]
+
+lepidopteraYesNo <- cbind(lepidopteraYesNo, allLepidopteraCut)
+
+lepidopteraYesNo <- lepidopteraYesNo[order(factor(lepidopteraYesNo[,8], 
+                                                   levels = c("Pyralidae", "Geometridae", "Crambidae",
+                                                              "Tortricidae", "Oecophoridae", "Lecithoceridae",
+                                                              "Noctuidae", "Erebidae", "Gelechiidae",
+                                                              "Nolidae", "Cosmopterigidae", "Limacodidae",
+                                                              "Eriocottidae", "Choreutidae", "Ypsolophidae",
+                                                              "Cossidae", "Lymantriidae", "Autostichidae",
+                                                              "Carposinidae", "Tineidae", "Anthelidae",
+                                                              "Blastobasidae", "Eupterotidae"))),]
+
+lepidopteraYesNo <- lepidopteraYesNo[,-c(7,8)]
+new.lepidopteraYesNo <- matrix(ncol = 0, nrow = 23)
+
+for (col in 1:ncol(lepidopteraYesNo)) {
+  new.lepidopteraYesNo <- cbind(new.lepidopteraYesNo, as.numeric(lepidopteraYesNo[,col]))
+}
+
+rownames(new.lepidopteraYesNo) <- c("Pyralidae", "Geometridae", "Crambidae",
+                                    "Tortricidae", "Oecophoridae", "Lecithoceridae",
+                                    "Noctuidae", "Erebidae", "Gelechiidae",
+                                    "Nolidae", "Cosmopterigidae", "Limacodidae",
+                                    "Eriocottidae", "Choreutidae", "Ypsolophidae",
+                                    "Cossidae", "Lymantriidae", "Autostichidae",
+                                    "Carposinidae", "Tineidae", "Anthelidae",
+                                    "Blastobasidae", "Eupterotidae")
+colnames(new.lepidopteraYesNo) <- c("Konye-wet", "Konye-dry", "Ayos-wet",
+                                    "Ayos-dry", "Bokito-wet", "Bokito-dry")
+
+library("pheatmap")
+pheatmap(new.lepidopteraYesNo, color = c("indianred", "darkseagreen"), border_color = "white",
+         cluster_rows = FALSE, cluster_cols = FALSE, breaks = c(0,0.5,1), angle_col = 0,
+         legend = FALSE)
+#####
