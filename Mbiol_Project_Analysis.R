@@ -486,11 +486,16 @@ RA.BW.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Bokito - wet
 RA.BW.nbrs <- RA.BW.data$Lab.nbr
 
 RA.BW.focal.df <- RA.focal.df[,c(as.character(RA.BW.nbrs))]
+RA.BW.focal.trim <- which(RA.BW.focal.df==0)
+RA.BW.focal.cut <- as.data.frame(RA.BW.focal.df[-c(RA.BW.focal.trim)])
 
 RA.BD.data <- new.RA.zbj.data[new.RA.zbj.data$`Location - Season`=="Bokito - dry",]
 RA.BD.nbrs <- RA.BD.data$Lab.nbr
 
 RA.BD.focal.df <- RA.focal.df[,c(as.character(RA.BD.nbrs))]
+RA.BD.focal.trim <- which(RA.BD.focal.df==0)
+RA.BD.focal.cut <- as.data.frame(RA.BD.focal.df[-c(RA.BD.focal.trim)])
+
 #####
 
 # RRA data for each location-season
@@ -1457,48 +1462,160 @@ RRA.nmds.graph
 # Occurrence of pest sequences
 pest.data <- readxl::read_xlsx("C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\Pest sequences.xlsx")
 pest.data <- as.data.frame(pest.data)
-pest.data <- pest.data[,-c(56,185,272,274:291)]
+pest.data <- pest.data[,-c(56,185,272,274:275, 277:291)]
 
 
 rownames(pest.data) <- c(pest.data$OTU)
-rownames(HR.focal.df) <- c(HR.focal.df$OTU)
-rownames(RA.focal.df) <- c(RA.focal.df$OTU)
 
-focal.OTUs <- unique(c(HR.focal.df$OTU, RA.focal.df$OTU))
-focal.OTUs <- focal.OTUs[which(focal.OTUs %in% pest.data$OTU)]
 pest.OTUs <- pest.data[c(6,13,26,27,57,62,73,80:82,91,97:102,
                          111:114,121,129:137,142,149,170:183,
                          197:202,207:209,15,74,75,88,107,122,
                          150,203,210,211), "OTU"]
 
-focal.pest.data <- pest.data[c(focal.OTUs),]
+pest.nbrs <- c(which(pest.data$OTU %in% pest.OTUs))
 
-final.pest.data <- seq.to.occurrence(focal.pest.data[,2:270])
-final.pest.data <- cbind(final.pest.data, focal.pest.data[,c(1, 273:276)])
+HR.pest.df <- HR.focal.df[c(pest.nbrs),]
+HR.pest.df <- cbind(HR.pest.df, pest.data[c(pest.nbrs), c(271, 274:277)])
 
-HR.pest.df <- final.pest.data[,c(HR.nbrs)]
-HR.pest.df <- cbind(HR.pest.df, final.pest.data[,c(270:274)])
-HR.pest.df.cut <- filter.rows(HR.pest.df[,1:79], 1, z)
-HR.pest.df <- HR.pest.df[-c(HR.pest.df.cut),]
+RA.pest.df <- RA.focal.df[c(pest.nbrs),]
+RA.pest.df <- cbind(RA.pest.df, pest.data[c(pest.nbrs), c(271, 274:277)])
 
-RA.pest.df <- final.pest.data[,c(RA.nbrs)]
-RA.pest.df <- cbind(RA.pest.df, final.pest.data[,c(270:274)])
-RA.pest.df.cut <- filter.rows(RA.pest.df[1:82], 1, z)
-RA.pest.df <- RA.pest.df[-c(RA.pest.df.cut),]
+HR.KW.pest.df <- HR.pest.df[,c(as.character(c(HR.KW.nbrs)), "sacc", "order", "family", "genus", "species")]
+HR.KW.pest.df <- cbind(HR.KW.pest.df, data.frame(HR.KW.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+HR.KW.pest.df.cut <- filter.rows(HR.KW.pest.df[,1:13], 1, z)
+HR.KW.pest.df <- HR.KW.pest.df[-c(HR.KW.pest.df.cut),]
 
-HR.KW.pest.df <- HR.pest.df[,c(as.character(HR.KW.nbrs), "OTU", "order", "family", "genus", "species")]
-HR.KD.pest.df <- HR.pest.df[,c(as.character(HR.KD.nbrs), "OTU", "order", "family", "genus", "species")]
-HR.AW.pest.df <- HR.pest.df[,c(as.character(HR.AW.nbrs), "OTU", "order", "family", "genus", "species")]
-HR.AD.pest.df <- HR.pest.df[,c(as.character(HR.AD.nbrs), "OTU", "order", "family", "genus", "species")]
-HR.BW.pest.df <- HR.pest.df[,c(as.character(HR.BW.nbrs), "OTU", "order", "family", "genus", "species")]
-HR.BD.pest.df <- HR.pest.df[,c(as.character(HR.BD.nbrs), "OTU", "order", "family", "genus", "species")]
+HR.KD.pest.df <- HR.pest.df[,c(as.character(c(HR.KD.nbrs)), "sacc", "order", "family", "genus", "species")]
+HR.KD.pest.df <- cbind(HR.KD.pest.df, data.frame(HR.KD.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+HR.KD.pest.df.cut <- filter.rows(HR.KD.pest.df[,1:24], 1, z)
+HR.KD.pest.df <- HR.KD.pest.df[-c(HR.KD.pest.df.cut),]
 
-RA.KW.pest.df <- RA.pest.df[,c(as.character(RA.KW.nbrs), "OTU", "order", "family", "genus", "species")]
-RA.KD.pest.df <- RA.pest.df[,c(as.character(RA.KD.nbrs), "OTU", "order", "family", "genus", "species")]
-RA.AW.pest.df <- RA.pest.df[,c(as.character(RA.AW.nbrs), "OTU", "order", "family", "genus", "species")]
-RA.AD.pest.df <- RA.pest.df[,c(as.character(RA.AD.nbrs), "OTU", "order", "family", "genus", "species")]
-RA.BW.pest.df <- RA.pest.df[,c(as.character(RA.BW.nbrs), "OTU", "order", "family", "genus", "species")]
-RA.BD.pest.df <- RA.pest.df[,c(as.character(RA.BD.nbrs), "OTU", "order", "family", "genus", "species")]
+HR.AW.pest.df <- HR.pest.df[,c(as.character(c(HR.AW.nbrs)), "sacc", "order", "family", "genus", "species")]
+HR.AW.pest.df <- cbind(HR.AW.pest.df, data.frame(HR.AW.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+HR.AW.pest.df.cut <- filter.rows(HR.AW.pest.df[,1:10], 1, z)
+HR.AW.pest.df <- HR.AW.pest.df[-c(HR.AW.pest.df.cut),]
+
+HR.AD.pest.df <- HR.pest.df[,c(as.character(c(HR.AD.nbrs)), "sacc", "order", "family", "genus", "species")]
+HR.AD.pest.df <- cbind(HR.AD.pest.df, data.frame(HR.AD.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+HR.AD.pest.df.cut <- filter.rows(HR.AD.pest.df[,1:25], 1, z)
+HR.AD.pest.df <- HR.AD.pest.df[-c(HR.AD.pest.df.cut),]
+
+HR.BW.pest.df <- HR.pest.df[,c(as.character(c(HR.BW.nbrs)), "sacc", "order", "family", "genus", "species")]
+HR.BW.pest.df <- cbind(HR.BW.pest.df, data.frame(HR.BW.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+HR.BW.pest.df.cut <- filter.rows(HR.BW.pest.df[,1:4], 1, z)
+HR.BW.pest.df <- HR.BW.pest.df[-c(HR.BW.pest.df.cut),]
+
+HR.BD.pest.df <- HR.pest.df[,c(as.character(c(HR.BD.nbrs)), "sacc", "order", "family", "genus", "species")]
+HR.BD.pest.df <- cbind(HR.BD.pest.df, data.frame(HR.BD.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+HR.BD.pest.df.cut <- filter.rows(HR.BD.pest.df[,1:3], 1, z)
+HR.BD.pest.df <- HR.BD.pest.df[-c(HR.BD.pest.df.cut),]
+
+RA.KW.pest.df <- RA.pest.df[,c(as.character(c(RA.KW.nbrs)), "sacc", "order", "family", "genus", "species")]
+RA.KW.pest.df <- cbind(RA.KW.pest.df, data.frame(RA.KW.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+RA.KW.pest.df.cut <- filter.rows(RA.KW.pest.df[,1:29], 1, z)
+RA.KW.pest.df <- RA.KW.pest.df[-c(RA.KW.pest.df.cut),]
+
+RA.KD.pest.df <- RA.pest.df[,c(as.character(c(RA.KD.nbrs)), "sacc", "order", "family", "genus", "species")]
+RA.KD.pest.df <- cbind(RA.KD.pest.df, data.frame(RA.KD.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+RA.KD.pest.df.cut <- filter.rows(RA.KD.pest.df[,1:18], 1, z)
+RA.KD.pest.df <- RA.KD.pest.df[-c(RA.KD.pest.df.cut),]
+
+RA.AW.pest.df <- RA.pest.df[,c(as.character(c(RA.AW.nbrs)), "sacc", "order", "family", "genus", "species")]
+RA.AW.pest.df <- cbind(RA.AW.pest.df, data.frame(RA.AW.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+RA.AW.pest.df.cut <- filter.rows(RA.AW.pest.df[,1:20], 1, z)
+RA.AW.pest.df <- RA.AW.pest.df[-c(RA.AW.pest.df.cut),]
+
+RA.AD.pest.df <- RA.pest.df[,c(as.character(c(RA.AD.nbrs)), "sacc", "order", "family", "genus", "species")]
+RA.AD.pest.df <- cbind(RA.AD.pest.df, data.frame(RA.AD.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+RA.AD.pest.df.cut <- filter.rows(RA.AD.pest.df[,1:13], 1, z)
+RA.AD.pest.df <- RA.AD.pest.df[-c(RA.AD.pest.df.cut),]
+
+RA.BW.pest.df <- RA.pest.df[,c(as.character(c(RA.BW.nbrs)), "sacc", "order", "family", "genus", "species")]
+RA.BW.pest.df <- cbind(RA.BW.pest.df, data.frame(RA.BW.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+RA.BW.pest.df.cut <- which(RA.BW.pest.df[,1]==0)
+RA.BW.pest.df <- RA.BW.pest.df[-c(RA.BW.pest.df.cut),]
+
+RA.BD.pest.df <- RA.pest.df[,c(as.character(c(RA.BD.nbrs)), "sacc", "order", "family", "genus", "species")]
+RA.BD.pest.df <- cbind(RA.BD.pest.df, data.frame(RA.BD.focal.df[c(pest.nbrs) ,c("wPOO", "RRA")]))
+RA.BD.pest.df.cut <- which(RA.BD.pest.df[,1]==0)
+RA.BD.pest.df <- RA.BD.pest.df[-c(RA.BD.pest.df.cut),]
+
+saccList <- unique(pest.data$sacc)
+# sacc summary function
+#####
+saccSummary <- function(df) {
+  wPOOsaccMean <- c()
+  RRAsaccMean <- c()
+  
+  for (sacc in saccList) {
+    sacc.df <- df[df$sacc==sacc,]
+    
+    ifelse(nrow(sacc.df) > 0,
+           wPOOsaccMean <- append(wPOOsaccMean, mean(sacc.df$wPOO)),
+           wPOOsaccMean <- append(wPOOsaccMean, 0))
+    
+    ifelse(nrow(sacc.df) > 0,
+           RRAsaccMean <- append(RRAsaccMean, mean(sacc.df$RRA)),
+           RRAsaccMean <- append(RRAsaccMean, 0))
+  }
+  return(list(wPOOsaccMean, RRAsaccMean))
+}
+#####
+
+HR.KW.sacc <- saccSummary(HR.KW.pest.df)
+HR.KD.sacc <- saccSummary(HR.KD.pest.df)
+HR.AW.sacc <- saccSummary(HR.AW.pest.df)
+HR.AD.sacc <- saccSummary(HR.AD.pest.df)
+HR.BW.sacc <- saccSummary(HR.BW.pest.df)
+HR.BD.sacc <- saccSummary(HR.BD.pest.df)
+
+RA.KW.sacc <- saccSummary(RA.KW.pest.df)
+RA.KD.sacc <- saccSummary(RA.KD.pest.df)
+RA.AW.sacc <- saccSummary(RA.AW.pest.df)
+RA.AD.sacc <- saccSummary(RA.AD.pest.df)
+RA.BW.sacc <- list(rep(0, times = length(saccList)),
+                   rep(0, times = length(saccList)))
+RA.BD.sacc <- list(rep(0, times = length(saccList)),
+                   rep(0, times = length(saccList)))
+
+
+saccSummary.df <- data.frame(Species = rep(c("H.ruber", "R.alcyone"), each = 6*length(saccList), times = 2),
+                             LS = rep(c("Konye - wet", "Konye - dry", "Ayos - wet",
+                                        "Ayos - dry", "Bokito - wet", "Bokito - dry"),
+                                      each = length(saccList), times = 4),
+                             Sacc = rep(saccList, times = 24),
+                             Summary = rep(c("wPOO", "RRA"), each = 12*length(saccList)),
+                             Value = c(HR.KW.sacc[[2]], HR.KD.sacc[[2]], HR.AW.sacc[[2]],
+                                       HR.AD.sacc[[2]], HR.BW.sacc[[2]], HR.BD.sacc[[2]],
+                                       RA.KW.sacc[[2]], RA.KD.sacc[[2]], RA.AW.sacc[[2]],
+                                       RA.AD.sacc[[2]], RA.BW.sacc[[2]], RA.BD.sacc[[2]],
+                                       HR.KW.sacc[[1]], HR.KD.sacc[[1]], HR.AW.sacc[[1]],
+                                      HR.AD.sacc[[1]], HR.BW.sacc[[1]], HR.BD.sacc[[1]],
+                                      RA.KW.sacc[[1]], RA.KD.sacc[[1]], RA.AW.sacc[[1]],
+                                      RA.AD.sacc[[1]], RA.BW.sacc[[1]], RA.BD.sacc[[1]]))
+
+saccSummary.cut <- which(saccSummary.df$Value < 0.00001)
+saccSummary.df <- saccSummary.df[-c(saccSummary.cut),]
+
+HRpestPlot <- ggplot(saccSummary.df[saccSummary.df$Species=="H.ruber",], aes(x = Sacc, y = Value, fill = Summary)) +
+  geom_bar(stat = "identity", position = "stack", ) + theme_minimal() +
+  facet_wrap(vars(factor(LS, levels = c("Konye - wet", "Konye - dry", "Ayos - wet",
+                                        "Ayos - dry", "Bokito - wet", "Bokito - dry")))) + 
+  theme(strip.background = element_blank(),
+        strip.text = element_text(size = 10),
+        axis.text.x = element_text(size = 8, angle = 90, vjust = 0.5),
+        axis.text.y = element_text(size = 8)) +
+  labs(x = "Pest", y = "Average abundance", fill = "Metric")
+
+RApestPlot <- ggplot(saccSummary.df[saccSummary.df$Species=="R.alcyone",], aes(x = Sacc, y = Value, fill = Summary)) +
+  geom_bar(stat = "identity", position = "stack", ) + theme_minimal() +
+  facet_wrap(vars(factor(LS, levels = c("Konye - wet", "Konye - dry", "Ayos - wet",
+                                        "Ayos - dry", "Bokito - wet", "Bokito - dry")))) + 
+  theme(strip.background = element_blank(),
+        strip.text = element_text(size = 10),
+        axis.text.x = element_text(size = 8, angle = 90, vjust = 1),
+        axis.text.y = element_text(size = 8)) +
+  labs(x = "Pest", y = "Average abundance", fill = "Metric")
 
 
 # Venn diagram comparing pest consumption between species
@@ -1772,45 +1889,37 @@ findLepidoptera <- function(df) {
 }
 #####
 
-HR.KW.focal.cut <- cbind(HR.KW.focal.cut, insect.data.order[-c(HR.KW.focal.trim),])
-HR.KD.focal.cut <- cbind(HR.KD.focal.cut, insect.data.order[-c(HR.KD.focal.trim),])
-HR.AW.focal.cut <- cbind(HR.AW.focal.cut, insect.data.order[-c(HR.AW.focal.trim),])
-HR.AD.focal.cut <- cbind(HR.AD.focal.cut, insect.data.order[-c(HR.AD.focal.trim),])
-HR.BW.focal.cut <- cbind(HR.BW.focal.cut, insect.data.order[-c(HR.BW.focal.trim),])
-HR.BD.focal.cut <- cbind(HR.BD.focal.cut, insect.data.order[-c(HR.BD.focal.trim),])
+RA.KW.focal.cut <- cbind(RA.KW.focal.cut, insect.data.order[-c(RA.KW.focal.trim),])
+colnames(RA.KW.focal.cut) <- c(RA.KW.nbrs, "OTU", "order", "family", "genus", "species")
 
-HR.KW.focal.cut <- cbind(HR.KW.focal.cut, data.frame(HR.KW.wPOO[-c(HR.KW.focal.trim)], HR.KW.RRA[-c(HR.KW.focal.trim)]))
-colnames(HR.KW.focal.cut) <- c(HR.KW.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+RA.KD.focal.cut <- cbind(RA.KD.focal.cut, insect.data.order[-c(RA.KD.focal.trim),])
+colnames(RA.KD.focal.cut) <- c(RA.KD.nbrs, "OTU", "order", "family", "genus", "species")
 
-HR.KD.focal.cut <- cbind(HR.KD.focal.cut, data.frame(HR.KD.wPOO[-c(HR.KD.focal.trim)], HR.KD.RRA[-c(HR.KD.focal.trim)]))
-colnames(HR.KD.focal.cut) <- c(HR.KD.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+RA.AW.focal.cut <- cbind(RA.AW.focal.cut, insect.data.order[-c(RA.AW.focal.trim),])
+colnames(RA.AW.focal.cut) <- c(RA.AW.nbrs, "OTU", "order", "family", "genus", "species")
 
-HR.AW.focal.cut <- cbind(HR.AW.focal.cut, data.frame(HR.AW.wPOO[-c(HR.AW.focal.trim)], HR.AW.RRA[-c(HR.AW.focal.trim)]))
-colnames(HR.AW.focal.cut) <- c(HR.AW.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+RA.AD.focal.cut <- cbind(RA.AD.focal.cut, insect.data.order[-c(RA.AD.focal.trim),])
+colnames(RA.AD.focal.cut) <- c(RA.AD.nbrs, "OTU", "order", "family", "genus", "species")
 
-HR.AD.focal.cut <- cbind(HR.AD.focal.cut, data.frame(HR.AD.wPOO[-c(HR.AD.focal.trim)], HR.AD.RRA[-c(HR.AD.focal.trim)]))
-colnames(HR.AD.focal.cut) <- c(HR.AD.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+RA.BW.focal.cut <- cbind(RA.BW.focal.cut, insect.data.order[-c(RA.BW.focal.trim),])
+colnames(RA.BW.focal.cut) <- c(RA.BW.nbrs, "OTU", "order", "family", "genus", "species")
 
-HR.BW.focal.cut <- cbind(HR.BW.focal.cut, data.frame(HR.BW.wPOO[-c(HR.BW.focal.trim)], HR.BW.RRA[-c(HR.BW.focal.trim)]))
-colnames(HR.BW.focal.cut) <- c(HR.BW.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+RA.BD.focal.cut <- cbind(RA.BD.focal.cut, insect.data.order[-c(RA.BD.focal.trim),])
+colnames(RA.BD.focal.cut) <- c(RA.BD.nbrs, "OTU", "order", "family", "genus", "species")
 
-HR.BD.focal.cut <- cbind(HR.BD.focal.cut, data.frame(HR.BD.wPOO[-c(HR.BD.focal.trim)], HR.BD.RRA[-c(HR.BD.focal.trim)]))
-colnames(HR.BD.focal.cut) <- c(HR.BD.nbrs, "OTU", "order", "family", "genus", "species", "wPOO", "RRA")
+RA.KW.fam <- findLepidoptera(RA.KW.focal.cut)
+RA.KD.fam <- findLepidoptera(RA.KD.focal.cut)
+RA.AW.fam <- findLepidoptera(RA.AW.focal.cut)
+RA.AD.fam <- findLepidoptera(RA.AD.focal.cut)
+RA.BW.fam <- findLepidoptera(RA.BW.focal.cut)
+RA.BD.fam <- findLepidoptera(RA.BD.focal.cut)
 
-
-HR.KW.fam <- findLepidoptera(HR.KW.focal.cut)
-HR.KD.fam <- findLepidoptera(HR.KD.focal.cut)
-HR.AW.fam <- findLepidoptera(HR.AW.focal.cut)
-HR.AD.fam <- findLepidoptera(HR.AD.focal.cut)
-HR.BW.fam <- findLepidoptera(HR.BW.focal.cut)
-HR.BD.fam <- findLepidoptera(HR.BD.focal.cut)
-
-HR_Lepidoptera <- list("Konye-wet" = HR.KW.fam,
-                       "Konye-dry" = HR.KD.fam,
-                       "Ayos-wet" = HR.AW.fam,
-                       "Ayos-dry" = HR.AD.fam,
-                       "Bokito-wet" = HR.BW.fam,
-                       "Bokito-dry" = HR.BD.fam)
+RA_Lepidoptera <- list("Konye-wet" = RA.KW.fam,
+                       "Konye-dry" = RA.KD.fam,
+                       "Ayos-wet" = RA.AW.fam,
+                       "Ayos-dry" = RA.AD.fam,
+                       "Bokito-wet" = RA.BW.fam,
+                       "Bokito-dry" = RA.BD.fam)
 
 allLepidoptera <- insect.data.order[insect.data.order$order=="Lepidoptera",]
 allLepidoptera <- unique(allLepidoptera$family)
@@ -1818,7 +1927,7 @@ allLepidoptera <- allLepidoptera[-c(which(allLepidoptera=="NA"))]
 
 lepidopteraYesNo <- matrix(ncol = 0, nrow = 35)
 
-for (l in HR_Lepidoptera) {
+for (l in RA_Lepidoptera) {
   YesNo <- c()
   for (all in allLepidoptera) {
     ifelse(all %in% l, YesNo <- append(YesNo, 1), YesNo <- append(YesNo, 0))
@@ -1847,30 +1956,34 @@ allLepidopteraCut <- allLepidoptera[-c(lepidopteraCut)]
 lepidopteraYesNo <- cbind(lepidopteraYesNo, allLepidopteraCut)
 
 lepidopteraYesNo <- lepidopteraYesNo[order(factor(lepidopteraYesNo[,8], 
-                                                   levels = c("Pyralidae", "Geometridae", "Crambidae",
-                                                              "Tortricidae", "Oecophoridae", "Lecithoceridae",
-                                                              "Noctuidae", "Erebidae", "Gelechiidae",
-                                                              "Nolidae", "Cosmopterigidae", "Limacodidae",
-                                                              "Eriocottidae", "Choreutidae", "Ypsolophidae",
-                                                              "Cossidae", "Lymantriidae", "Autostichidae",
-                                                              "Carposinidae", "Tineidae", "Anthelidae",
-                                                              "Blastobasidae", "Eupterotidae"))),]
+                                                   levels = c("Noctuidae","Pyralidae", "Geometridae", "Tortricidae",
+                                                              "Tineidae", "Crambidae", "Lecithoceridae",
+                                                              "Oecophoridae", "Cosmopterigidae", "Erebidae", "Gelechiidae",
+                                                              "Limacodidae", "Nolidae", "Autostichidae",
+                                                              "Anthelidae", "Carposinidae", "Blastobasidae",
+                                                              "Yponomeutidae", "Cossidae",
+                                                              "Saturniidae", "Choreutidae",
+                                                              "Scythrididae", "Lymantriidae",
+                                                              "Coleophoridae", "Notodontidae", "Lasiocampidae",
+                                                              "Eupterotidae","Elachistidae", "Euteliidae"))),]
 
 lepidopteraYesNo <- lepidopteraYesNo[,-c(7,8)]
-new.lepidopteraYesNo <- matrix(ncol = 0, nrow = 23)
+new.lepidopteraYesNo <- matrix(ncol = 0, nrow = 29)
 
 for (col in 1:ncol(lepidopteraYesNo)) {
   new.lepidopteraYesNo <- cbind(new.lepidopteraYesNo, as.numeric(lepidopteraYesNo[,col]))
 }
 
-rownames(new.lepidopteraYesNo) <- c("Pyralidae", "Geometridae", "Crambidae",
-                                    "Tortricidae", "Oecophoridae", "Lecithoceridae",
-                                    "Noctuidae", "Erebidae", "Gelechiidae",
-                                    "Nolidae", "Cosmopterigidae", "Limacodidae",
-                                    "Eriocottidae", "Choreutidae", "Ypsolophidae",
-                                    "Cossidae", "Lymantriidae", "Autostichidae",
-                                    "Carposinidae", "Tineidae", "Anthelidae",
-                                    "Blastobasidae", "Eupterotidae")
+rownames(new.lepidopteraYesNo) <- c("Noctuidae","Pyralidae", "Geometridae", "Tortricidae",
+                                    "Tineidae", "Crambidae", "Lecithoceridae",
+                                    "Oecophoridae", "Cosmopterigidae", "Erebidae", "Gelechiidae",
+                                    "Limacodidae", "Nolidae", "Autostichidae",
+                                    "Anthelidae", "Carposinidae", "Blastobasidae",
+                                    "Yponomeutidae", "Cossidae",
+                                    "Saturniidae", "Choreutidae",
+                                    "Scythrididae", "Lymantriidae",
+                                    "Coleophoridae", "Notodontidae", "Lasiocampidae",
+                                    "Eupterotidae","Elachistidae", "Euteliidae")
 colnames(new.lepidopteraYesNo) <- c("Konye-wet", "Konye-dry", "Ayos-wet",
                                     "Ayos-dry", "Bokito-wet", "Bokito-dry")
 
