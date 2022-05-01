@@ -907,11 +907,181 @@ for (name in names(LepFam[7:12])) {
   lepidopteraMatrix <- cbind(lepidopteraMatrix, yesNo)
 }
 
+lepidopteraMatrix <- lepidopteraMatrix[,1:6] + lepidopteraMatrix[,7:12]
 
 colnames(lepidopteraMatrix) <- c(LocationSeasonList)
 rownames(lepidopteraMatrix) <- c(allLepidoptera)
 
 library("pheatmap")
-pheatmap(lepidopteraMatrix, border_color = "white",
+pheatmap(lepidopteraMatrix, border_color = "white", 
+         color = c("white", "khaki2", "indianred", "darkseagreen"),
          cluster_rows = FALSE, cluster_cols = FALSE,  angle_col = 0,
          legend = TRUE)
+
+famSum <- c()
+for (row in 1:nrow(lepidopteraMatrix)) {
+  famSum <- append(famSum, sum(lepidopteraMatrix[row,]))
+}
+
+famSumDF <- data.frame(Family = allLepidoptera,
+                       Sum = famSum)
+famSumDF <- famSumDF[order(famSumDF[,2]),]
+
+allLepidoptera <- famSumDF$Family
+lepidopteraMatrix <- matrix(ncol = 0, nrow = length(allLepidoptera))
+
+for (name in names(LepFam[1:6])) {
+  yesNo <- c()
+  
+  for (all in allLepidoptera) {
+    ifelse(all %in% LepFam[[name]], 
+           yesNo <- append(yesNo, 1,),
+           yesNo <- append(yesNo, 0))
+  }
+  lepidopteraMatrix <- cbind(lepidopteraMatrix, yesNo)
+} 
+
+for (name in names(LepFam[7:12])) {
+  yesNo <- c()
+  
+  for (all in allLepidoptera) {
+    ifelse(all %in% LepFam[[name]], 
+           yesNo <- append(yesNo, 2,),
+           yesNo <- append(yesNo, 0))
+  }
+  lepidopteraMatrix <- cbind(lepidopteraMatrix, yesNo)
+}
+
+lepidopteraMatrix <- lepidopteraMatrix[,1:6] + lepidopteraMatrix[,7:12]
+
+colnames(lepidopteraMatrix) <- c(LocationSeasonList)
+rownames(lepidopteraMatrix) <- c(allLepidoptera)
+lepidopteraMatrix <- lepidopteraMatrix[-c(1:2),]
+
+pheatmap(lepidopteraMatrix, border_color = "white", 
+         color = c("peachpuff1", "lightpink3", "indianred", "coral4"),
+         cluster_rows = FALSE, cluster_cols = FALSE,  angle_col = 0,
+         legend = TRUE, legend_labels = c("None", "HR only", "RA only", "Both"),
+         legend_breaks = c(0,1,2,3))
+
+
+# pest occurrences
+pestData <- readxl::read_xlsx("C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\Pest sequences.xlsx")
+pestData <- as.data.frame(pestData)
+pestData <- pestData[,-c(56,185,272,274:275, 277:291)]
+
+rownames(pestData) <- c(pestData$OTU)
+
+pestData <- cbind(pestData, paste(pestData$Pest,pestData$sacc, sep = ""))
+
+pestDataList <- list()
+pestNbrs <- list()
+for (name in names(insectTaxonomy[30:41])) {
+  pestDataList <- append(pestDataList, list(insectTaxonomy[[name]][c(which(rownames(insectTaxonomy[[name]]) %in% pestData$OTU)),]))
+  pestNbrs <- append(pestNbrs, list(which(rownames(insectTaxonomy[[name]]) %in% pestData$OTU)))
+}
+
+names(pestNbrs) <- c(names(insectTaxonomy[6:17]))
+
+for (name in names(insectTaxonomy[6:15])) {
+  pestDataList <- append(pestDataList, list(insectTaxonomy[[name]][c(pestNbrs[[name]]),]))
+}
+
+for (name in names(insectTaxonomy[16:17])) {
+  pestDataList <- append(pestDataList, list(insectTaxonomy[[name]][c(pestNbrs[[name]])]))
+}
+
+names(pestDataList) <- c("HR_KW_info", "HR_KD_info", "HR_AW_info",
+                         "HR_AD_info", "HR_BW_info", "HR_BD_info",
+                         "RA_KW_info", "RA_KD_info", "RA_AW_info", 
+                         "RA_AD_info", "RA_BW_info", "RA_BD_info",
+                         "HR_KW_pest", "HR_KD_pest", "HR_AW_pest",
+                         "HR_AD_pest", "HR_BW_pest", "HR_BD_pest",
+                         "RA_KW_pest", "RA_KD_pest", "RA_AW_pest", 
+                         "RA_AD_pest", "RA_BW_pest", "RA_BD_pest")
+
+pestCut <- list()
+for (name in names(pestDataList[23:24])) {
+  pestCut <- append(pestCut, list(which(pestDataList[[name]]==0)))
+}
+
+pestDataList[["RA_BW_info"]] <- pestDataList[["RA_BW_info"]][-c(pestCut[[1]]),]
+pestDataList[["RA_BW_pest"]] <- pestDataList[["RA_BW_pest"]][-c(pestCut[[1]])]
+pestDataList[["RA_BD_info"]] <- pestDataList[["RA_BD_info"]][-c(pestCut[[2]]),]
+pestDataList[["RA_BD_pest"]] <- pestDataList[["RA_BD_pest"]][-c(pestCut[[2]])]
+
+allPests <- unique(c(pestData$`paste(pestData$Pest, pestData$sacc, sep = "")`))
+
+findPests <- function(df) {
+  pestDF <- pestData[c(which(pestData$OTU %in% df$OTU)),]
+  pestSacc <- pestDF$`paste(pestData$Pest, pestData$sacc, sep = "")`
+  return(pestSacc)
+}
+
+for (name in names(pestDataList[1:10])) {
+  pestDataList[[name]] <- cbind(pestDataList[[name]], findPests(pestDataList[[name]]))
+}
+
+names(pestDataList) <- c("HR_KW_info", "HR_KD_info", "HR_AW_info",
+                         "HR_AD_info", "HR_BW_info", "HR_BD_info",
+                         "RA_KW_info", "RA_KD_info", "RA_AW_info", 
+                         "RA_AD_info", "RA_BW_info", "RA_BD_info",
+                         "HR_KW_pest", "HR_KD_pest", "HR_AW_pest",
+                         "HR_AD_pest", "HR_BW_pest", "HR_BD_pest",
+                         "RA_KW_pest", "RA_KD_pest", "RA_AW_pest", 
+                         "RA_AD_pest", "RA_BW_pest", "RA_BD_pest")
+
+pestMatrix <- matrix(ncol = 0, nrow = length(allPests))
+
+for (name in names(pestDataList[7:12])) {
+  yesNo <- c()
+  
+  for (all in allPests) {
+    ifelse(all %in% pestDataList[[name]]$`findPests(pestDataList[[name]])`, 
+           yesNo <- append(yesNo, 1),
+           yesNo <- append(yesNo, 0))
+  }
+  pestMatrix <- cbind(pestMatrix, yesNo)
+} 
+
+rownames(pestMatrix) <- c(allPests)
+colnames(pestMatrix) <- c(names(pestDataList[1:6]))
+
+
+pestMatrixCut <- filter_rows(pestMatrix)
+pestMatrix <- pestMatrix[-c(pestMatrixCut),]
+
+rownames(pestMatrix) <- c(abbreviate(c(rownames(pestMatrix)), minlength = 3, 
+                                     strict = TRUE, method = "left.keep", use.classes = FALSE))
+
+# pest networks
+pestAbbr <- c("Lep", "Col", "Dip")
+
+pestTotal <- list()
+for (pest in pestAbbr) {
+  pestDF <- data.frame(pestMatrix[which(str_detect(pest,rownames(pestMatrix))==TRUE),])
+  
+  pestList <- c()
+  for (col in 1:ncol(pestDF)) {
+    pestList <- append(pestList, sum(pestDF[,col])) 
+  }
+  pestTotal <- append(pestTotal, list(pestList))
+}
+
+library(bipartite)
+
+pestBipartite <- matrix(c(pestTotal[[1]], pestTotal[[2]], pestTotal[[3]]), ncol=3)
+rownames(pestBipartite) <- c(LocationSeasonList)
+colnames(pestBipartite) <- c(pestAbbr)
+
+plotweb(pestBipartite, 
+        text.rot=90, labsize = 1.2,  
+        y.width.low=0.05,y.width.high=0.05, 
+        col.high="light blue",col.low="light green",
+        col.interaction = "grey90", ybig = 1.5,
+        x.lim = c(0,1.5), sequence = list(seq.low = c("Konye - wet", "Konye - dry",
+                                                      "Ayos - wet", "Ayos - dry"),
+                                          seq.high = c(pestAbbr)), y.lim = c(-0.5,2)) 
+
+
+visweb(pestBipartite)
