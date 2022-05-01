@@ -1031,6 +1031,7 @@ names(pestDataList) <- c("HR_KW_info", "HR_KD_info", "HR_AW_info",
                          "RA_KW_pest", "RA_KD_pest", "RA_AW_pest", 
                          "RA_AD_pest", "RA_BW_pest", "RA_BD_pest")
 
+# matrix of pest occurrences
 pestMatrix <- matrix(ncol = 0, nrow = length(allPests))
 
 for (name in names(pestDataList[7:12])) {
