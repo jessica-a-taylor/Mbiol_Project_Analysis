@@ -1086,3 +1086,61 @@ plotweb(pestBipartite,
 
 
 visweb(pestBipartite)
+
+# Venn diagram comparing pest consumption
+library(RAM)
+  # comparing total pest consumption between species
+group.venn(list(H.ruber = unique(c(pestDataList$HR_KW_info$`findPests(pestDataList[[name]])`,
+                                     pestDataList$HR_KD_info$`findPests(pestDataList[[name]])`,
+                                     pestDataList$HR_AW_info$`findPests(pestDataList[[name]])`,
+                                     pestDataList$HR_AD_info$`findPests(pestDataList[[name]])`)),
+                    R.alcyone = unique(c(pestDataList$RA_KW_info$`findPests(pestDataList[[name]])`,
+                                       pestDataList$RA_KD_info$`findPests(pestDataList[[name]])`,
+                                       pestDataList$RA_AW_info$`findPests(pestDataList[[name]])`,
+                                       pestDataList$RA_AD_info$`findPests(pestDataList[[name]])`))),
+           label = FALSE, lab.cex=1, cex = 1.5,
+           cat.cex = 1.5, cat.pos=c(330, 380), cat.dist = 0.05)
+
+  # comparing pest consumption by each species between seasons
+group.venn(list(Wet = unique(c(pestDataList$RA_KW_info$`findPests(pestDataList[[name]])`,
+                               pestDataList$RA_AW_info$`findPests(pestDataList[[name]])`)),
+           Dry = unique(c(pestDataList$RA_KD_info$`findPests(pestDataList[[name]])`,
+                                     pestDataList$RA_AD_info$`findPests(pestDataList[[name]])`))),
+                label = FALSE, lab.cex=1, cex = 1.5,
+           cat.cex = 1.5, cat.pos=c(330, 380), cat.dist = 0.05, fill = c("lightblue2", "lightpink"))
+
+group.venn(list(KonyeWet = unique(pestDataList$HR_KW_info$`findPests(pestDataList[[name]])`),
+                KonyeDry = unique(pestDataList$HR_AW_info$`findPests(pestDataList[[name]])`),
+                AyosWet = unique(pestDataList$HR_KD_info$`findPests(pestDataList[[name]])`),
+                AyosDry = unique(pestDataList$HR_AD_info$`findPests(pestDataList[[name]])`)),
+           label = FALSE, lab.cex=1, cex = 1.5,
+           cat.cex = 1.5, cat.dist = c(0.23,0.23,0.12,0.12))
+
+
+RApestMatrix <- matrix(ncol = 0, nrow = length(allPests))
+
+for (name in names(pestDataList[7:10])) {
+  yesNo <- c()
+  
+  for (all in allPests) {
+    ifelse(all %in% pestDataList[[name]]$`findPests(pestDataList[[name]])`, 
+           yesNo <- append(yesNo, 2),
+           yesNo <- append(yesNo, 0))
+  }
+  RApestMatrix <- cbind(RApestMatrix, yesNo)
+} 
+
+
+comparePestMatrix <- HRpestMatrix[,1:4] + RApestMatrix[,1:4]
+rownames(comparePestMatrix) <- c(allPests)
+colnames(comparePestMatrix) <- c("Konye - wet", "Konye - dry", "Ayos - wet", "Ayos - dry")
+
+pestMatrixCut <- filter_rows(comparePestMatrix)
+comparePestMatrix <- comparePestMatrix[-c(pestMatrixCut),]
+
+pheatmap(comparePestMatrix, border_color = "white", 
+         color = c("peachpuff1", "lightpink3", "indianred", "coral4"),
+         cluster_rows = FALSE, cluster_cols = FALSE,  angle_col = 0,
+         legend = TRUE, legend_labels = c("None", "HR only", "RA only", "Both"),
+         legend_breaks = c(0,1,2,3))
+
