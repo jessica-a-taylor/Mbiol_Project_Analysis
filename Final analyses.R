@@ -7,6 +7,7 @@ insectData <- seq.data[c(seqInsecta),]
 
 # remove unwanted columns
 insectData <- insectData[,-c(56,185,248,249,272,274:275,277:291)]
+insectData <- cbind(insectData, paste(insectData$order, insectData$sacc, sep = ""))
 
 library(writexl)
 writexl::write_xlsx(insectData, "C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\insect.filtered.data.xlsx")
@@ -271,10 +272,10 @@ HR_occurrences_OTUs = insectData[c(which(insectData$OTU %in% rownames(focalDataL
 RA_occurrences_OTUs = insectData[c(which(insectData$OTU %in% rownames(focalDataList$RA_occurrences_graphs))),]
 
 insectTaxonomy <- list(all_OTUs = insectData[,c(1,269,272:275)],
-                       HR_occurrences_OTUs = cbind(focalDataList$HR_occurrences_graphs, HR_occurrences_OTUs[,c(1,269:275)]),
-                       RA_occurrences_OTUs = cbind(focalDataList$RA_occurrences_graphs, RA_occurrences_OTUs[,c(1,269:275)]),
-                       HR_RRA_OTUs = cbind(focalDataList$HR_RRA_graphs, HR_occurrences_OTUs[,c(1,269:275)]),
-                       RA_RRA_OTUs = cbind(focalDataList$RA_RRA_graphs, RA_occurrences_OTUs[,c(1,269:275)]))
+                       HR_occurrences_OTUs = cbind(focalDataList$HR_occurrences_graphs, HR_occurrences_OTUs[,c(1,269:275, 277)]),
+                       RA_occurrences_OTUs = cbind(focalDataList$RA_occurrences_graphs, RA_occurrences_OTUs[,c(1,269:275, 277)]),
+                       HR_RRA_OTUs = cbind(focalDataList$HR_RRA_graphs, HR_occurrences_OTUs[,c(1,269:275, 277)]),
+                       RA_RRA_OTUs = cbind(focalDataList$RA_RRA_graphs, RA_occurrences_OTUs[,c(1,269:275, 277)]))
 
 not.na <- c()
 for (l in 1:length(insectTaxonomy$HR_occurrences_OTUs$family)) {
@@ -417,18 +418,18 @@ insectTaxonomy <- append(insectTaxonomy,
                               RA_AD_RRA = RA_AD_RRA[-c(RA_AD_cut),],
                               RA_BW_RRA = RA_BW_RRA,
                               RA_BD_RRA = RA_BD_RRA,
-                              HR_KW_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_KW_cut), c("OTU","sacc","order","family","genus","species")],
-                              HR_KD_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_KD_cut), c("OTU","sacc","order","family","genus","species")],
-                              HR_AW_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_AW_cut), c("OTU","sacc","order","family","genus","species")],
-                              HR_AD_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_AD_cut), c("OTU","sacc","order","family","genus","species")],
-                              HR_BW_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_BW_cut), c("OTU","sacc","order","family","genus","species")],
-                              HR_BD_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_BD_cut), c("OTU","sacc","order","family","genus","species")],
-                              RA_KW_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_KW_cut), c("OTU","sacc","order","family","genus","species")],
-                              RA_KD_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_KD_cut), c("OTU","sacc","order","family","genus","species")],
-                              RA_AW_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_AW_cut), c("OTU","sacc","order","family","genus","species")],
-                              RA_AD_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_AD_cut), c("OTU","sacc","order","family","genus","species")],
-                              RA_BW_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_BW_cut), c("OTU","sacc","order","family","genus","species")],
-                              RA_BD_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_BD_cut), c("OTU","sacc","order","family","genus","species")]))
+                              HR_KW_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_KW_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              HR_KD_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_KD_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              HR_AW_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_AW_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              HR_AD_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_AD_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              HR_BW_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_BW_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              HR_BD_info = insectTaxonomy$HR_occurrences_OTUs[-c(HR_BD_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              RA_KW_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_KW_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              RA_KD_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_KD_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              RA_AW_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_AW_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              RA_AD_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_AD_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              RA_BW_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_BW_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")],
+                              RA_BD_info = insectTaxonomy$RA_occurrences_OTUs[-c(RA_BD_cut), c("OTU","sacc","order","family","genus","species", "paste(insectData$order, insectData$sacc, sep = \"\")")]))
 
 # function to count OTUs per sample
 #####
@@ -908,6 +909,7 @@ for (name in names(LepFam[7:12])) {
 }
 
 lepidopteraMatrix <- lepidopteraMatrix[,1:6] + lepidopteraMatrix[,7:12]
+LocationSeasonList <- c("Konye - wet" , "Konye - dry" , "Ayos - wet" , "Ayos - dry", "Bokito - wet", "Bokito - dry")
 
 colnames(lepidopteraMatrix) <- c(LocationSeasonList)
 rownames(lepidopteraMatrix) <- c(allLepidoptera)
@@ -1034,7 +1036,7 @@ names(pestDataList) <- c("HR_KW_info", "HR_KD_info", "HR_AW_info",
 # matrix of pest occurrences
 pestMatrix <- matrix(ncol = 0, nrow = length(allPests))
 
-for (name in names(pestDataList[7:12])) {
+for (name in names(pestDataList[7:10])) {
   yesNo <- c()
   
   for (all in allPests) {
@@ -1046,7 +1048,7 @@ for (name in names(pestDataList[7:12])) {
 } 
 
 rownames(pestMatrix) <- c(allPests)
-colnames(pestMatrix) <- c(names(pestDataList[1:6]))
+colnames(pestMatrix) <- c(names(pestDataList[1:4]))
 
 
 pestMatrixCut <- filter_rows(pestMatrix)
@@ -1056,11 +1058,11 @@ rownames(pestMatrix) <- c(abbreviate(c(rownames(pestMatrix)), minlength = 3,
                                      strict = TRUE, method = "left.keep", use.classes = FALSE))
 
 # pest networks
-pestAbbr <- c("Lep", "Col", "Dip")
+pestAbbr <- c("Lep", "Col", "Dip", "Hem")
 
 pestTotal <- list()
 for (pest in pestAbbr) {
-  pestDF <- data.frame(pestMatrix[which(str_detect(pest,rownames(pestMatrix))==TRUE),])
+  pestDF <- data.frame(matrix(pestMatrix[which(str_detect(pest,rownames(pestMatrix))==TRUE),], ncol = 4))
   
   pestList <- c()
   for (col in 1:ncol(pestDF)) {
@@ -1071,8 +1073,8 @@ for (pest in pestAbbr) {
 
 library(bipartite)
 
-pestBipartite <- matrix(c(pestTotal[[1]], pestTotal[[2]], pestTotal[[3]]), ncol=3)
-rownames(pestBipartite) <- c(LocationSeasonList)
+pestBipartite <- matrix(c(pestTotal[[1]], pestTotal[[2]], pestTotal[[3]],pestTotal[[4]]), ncol=4)
+rownames(pestBipartite) <- c(LocationSeasonList[-c(5:6)])
 colnames(pestBipartite) <- c(pestAbbr)
 
 plotweb(pestBipartite, 
@@ -1080,16 +1082,36 @@ plotweb(pestBipartite,
         y.width.low=0.05,y.width.high=0.05, 
         col.high="light blue",col.low="light green",
         col.interaction = "grey90", ybig = 1.5,
-        x.lim = c(0,1.5), sequence = list(seq.low = c("Konye - wet", "Konye - dry",
-                                                      "Ayos - wet", "Ayos - dry"),
+        x.lim = c(0,1.5), sequence = list(seq.low = c(LocationSeasonList[-c(5:6)]),
                                           seq.high = c(pestAbbr)), y.lim = c(-0.5,2)) 
 
 
 visweb(pestBipartite)
 
+
+# Venn diagram comparing pest consumption
+library(RAM)
+  # comparing total pest consumption between species
+group.venn(list(H.ruber = unique(c(pestDataList$HR_KW_info$`findPests(pestDataList[[name]])`,
+                                     pestDataList$HR_KD_info$`findPests(pestDataList[[name]])`,
+                                     pestDataList$HR_AW_info$`findPests(pestDataList[[name]])`,
+                                     pestDataList$HR_AD_info$`findPests(pestDataList[[name]])`,
+                                   pestDataList$HR_BW_info$`findPests(pestDataList[[name]])`,
+                                   pestDataList$HR_BD_info$`findPests(pestDataList[[name]])`)),
+                    R.alcyone = unique(c(pestDataList$RA_KW_info$`findPests(pestDataList[[name]])`,
+                                       pestDataList$RA_KD_info$`findPests(pestDataList[[name]])`,
+                                       pestDataList$RA_AW_info$`findPests(pestDataList[[name]])`,
+                                       pestDataList$RA_AD_info$`findPests(pestDataList[[name]])`,
+                                       pestDataList$RA_BW_info$`findPests(pestDataList[[name]])`,
+                                       pestDataList$RA_BD_info$`findPests(pestDataList[[name]])`))),
+           label = FALSE, lab.cex=1, cex = 1.5,
+           cat.cex = 1.5, cat.pos=c(330, 380), cat.dist = 0.05)
+
+# make better Venn function
+#####
 JessVenn <- function (vectors, cat.cex = 1.5, cex = 1, cat.pos = NULL, cat.dist = NULL, 
-          label = TRUE, lab.cex = 1, lab.col = "black", fill = NULL, 
-          file = NULL, ext = NULL, width = 8, height = 8) 
+                      label = TRUE, lab.cex = 1, lab.col = "black", fill = NULL, 
+                      file = NULL, ext = NULL, width = 8, height = 8) 
 {
   save <- !is.null(file)
   if (save) {
@@ -1203,21 +1225,7 @@ JessVenn <- function (vectors, cat.cex = 1.5, cex = 1, cat.pos = NULL, cat.dist 
   }
   invisible()
 }
-
-# Venn diagram comparing pest consumption
-library(RAM)
-  # comparing total pest consumption between species
-group.venn(list(H.ruber = unique(c(pestDataList$HR_KW_info$`findPests(pestDataList[[name]])`,
-                                     pestDataList$HR_KD_info$`findPests(pestDataList[[name]])`,
-                                     pestDataList$HR_AW_info$`findPests(pestDataList[[name]])`,
-                                     pestDataList$HR_AD_info$`findPests(pestDataList[[name]])`)),
-                    R.alcyone = unique(c(pestDataList$RA_KW_info$`findPests(pestDataList[[name]])`,
-                                       pestDataList$RA_KD_info$`findPests(pestDataList[[name]])`,
-                                       pestDataList$RA_AW_info$`findPests(pestDataList[[name]])`,
-                                       pestDataList$RA_AD_info$`findPests(pestDataList[[name]])`))),
-           label = FALSE, lab.cex=1, cex = 1.5,
-           cat.cex = 1.5, cat.pos=c(330, 380), cat.dist = 0.05)
-
+#####
   # comparing pest consumption by each species between seasons
 JessVenn(list(Wet = unique(c(pestDataList$RA_KW_info$`findPests(pestDataList[[name]])`,
                                pestDataList$RA_AW_info$`findPests(pestDataList[[name]])`)),
@@ -1229,14 +1237,24 @@ JessVenn(list(Wet = unique(c(pestDataList$RA_KW_info$`findPests(pestDataList[[na
 group.venn(list(KonyeWet = unique(pestDataList$HR_KW_info$`findPests(pestDataList[[name]])`),
                 KonyeDry = unique(pestDataList$HR_AW_info$`findPests(pestDataList[[name]])`),
                 AyosWet = unique(pestDataList$HR_KD_info$`findPests(pestDataList[[name]])`),
-                AyosDry = unique(pestDataList$RA_AD_info$`findPests(pestDataList[[name]])`)),
+                AyosDry = unique(pestDataList$HR_AD_info$`findPests(pestDataList[[name]])`)),
            label = FALSE, lab.cex=1, cex = 1.5,
            cat.cex = 1.5, cat.dist = c(0.23,0.23,0.12,0.12))
 
-
+JessVenn(list(HRwet = unique(c(pestDataList$HR_KW_info$`findPests(pestDataList[[name]])`,
+                                 pestDataList$HR_AW_info$`findPests(pestDataList[[name]])`)),
+                HRdry = unique(c(pestDataList$HR_KD_info$`findPests(pestDataList[[name]])`,
+                                 pestDataList$HR_AD_info$`findPests(pestDataList[[name]])`)),
+                RAwet = unique(c(pestDataList$RA_KW_info$`findPests(pestDataList[[name]])`,
+                                 pestDataList$RA_AW_info$`findPests(pestDataList[[name]])`)),
+                RAdry = unique(c(pestDataList$RA_KD_info$`findPests(pestDataList[[name]])`,
+                                 pestDataList$RA_AD_info$`findPests(pestDataList[[name]])`))),
+           label = FALSE, lab.cex=1, cex = 1.5,
+           cat.cex = 1.5, cat.dist = c(0.23,0.23,0.12,0.12))
+#####
 RApestMatrix <- matrix(ncol = 0, nrow = length(allPests))
 
-for (name in names(pestDataList[7:10])) {
+for (name in names(pestDataList[7:12])) {
   yesNo <- c()
   
   for (all in allPests) {
@@ -1248,9 +1266,38 @@ for (name in names(pestDataList[7:10])) {
 } 
 
 
-comparePestMatrix <- HRpestMatrix[,1:4] + RApestMatrix[,1:4]
+comparePestMatrix <- HRpestMatrix[,1:6] + RApestMatrix[,1:6]
 rownames(comparePestMatrix) <- c(allPests)
-colnames(comparePestMatrix) <- c("Konye - wet", "Konye - dry", "Ayos - wet", "Ayos - dry")
+colnames(comparePestMatrix) <- c(LocationSeasonList)
+
+pestSum <- c()
+for (row in 1:nrow(comparePestMatrix)) {
+  pestSum <- append(pestSum, sum(comparePestMatrix[row,]))
+}
+
+pestSumDF <- data.frame(Family = allPests,
+                        Sum = pestSum)
+pestSumDF <- pestSumDF[order(pestSumDF[,2]),]
+
+allPests <- pestSumDF$Family
+
+RAcomparePestMatrix <- matrix(ncol = 0, nrow = length(allPests))
+
+for (name in names(pestDataList[7:12])) {
+  yesNo <- c()
+  
+  for (all in allPests) {
+    ifelse(all %in% pestDataList[[name]]$`findPests(pestDataList[[name]])`, 
+           yesNo <- append(yesNo, 2),
+           yesNo <- append(yesNo, 0))
+  }
+  RAcomparePestMatrix <- cbind(RAcomparePestMatrix, yesNo)
+} 
+
+
+comparePestMatrix <- HRcomparePestMatrix[,1:6] + RAcomparePestMatrix[,1:6]
+rownames(comparePestMatrix) <- c(allPests)
+colnames(comparePestMatrix) <- c(LocationSeasonList)
 
 pestMatrixCut <- filter_rows(comparePestMatrix)
 comparePestMatrix <- comparePestMatrix[-c(pestMatrixCut),]
@@ -1261,3 +1308,70 @@ pheatmap(comparePestMatrix, border_color = "white",
          legend = TRUE, legend_labels = c("None", "HR only", "RA only", "Both"),
          legend_breaks = c(0,1,2,3))
 
+# network for all diet items
+# matrix of pest occurrences
+allSacc <- c(unique(insectData$`paste(insectData$order, insectData$sacc, sep = "")`))
+
+dietMatrix <- matrix(ncol = 0, nrow = length(allSacc))
+for (name in names(insectTaxonomy[30:33])){
+  yesNo <- c()
+  dietDF <- insectTaxonomy[[name]][-c(which(insectTaxonomy[[name]]$order=="NA")),]
+
+  for (all in allSacc) {
+    ifelse(all %in% unique(dietDF$`paste(insectData$order, insectData$sacc, sep = "")`), 
+           yesNo <- append(yesNo, 1),
+           yesNo <- append(yesNo, 0))
+  }
+dietMatrix <- cbind(dietMatrix, yesNo)
+}
+
+rownames(dietMatrix) <- c(allSacc)
+colnames(dietMatrix) <- c(names(insectTaxonomy[30:33]))
+
+dietMatrixCut <- filter_rows(dietMatrix)
+dietMatrix <- dietMatrix[-c(dietMatrixCut),]
+
+rownames(dietMatrix) <- c(abbreviate(c(rownames(dietMatrix)), minlength = 3, 
+                                     strict = TRUE, method = "left.keep", use.classes = FALSE))
+
+# diet networks
+orderAbbr <- c(unique(rownames(dietMatrix))[-c(6,8,10)])
+
+dietTotal <- list()
+for (order in orderAbbr) {
+  dietDF <- data.frame(matrix(ncol = 4, nrow=0))
+  dietDF <- dietMatrix[which(str_detect(order,rownames(dietMatrix))==TRUE),]
+
+  dietList <- c()
+  for (col in 1:ncol(dietDF)) {
+    dietList <- append(dietList, sum(dietDF[,col])) 
+  }
+  dietTotal <- append(dietTotal, list(dietList))
+}
+
+library(bipartite)
+
+dietBipartite <- matrix(c(dietTotal[[1]], dietTotal[[2]], 
+                          dietTotal[[3]], dietTotal[[4]],
+                          dietTotal[[5]], dietTotal[[6]],
+                          dietTotal[[7]]), nrow=7, byrow = TRUE)
+colnames(dietBipartite) <- c(LocationSeasonList[-c(5:6)])
+rownames(dietBipartite) <- c(orderAbbr)
+
+plotweb(dietBipartite, 
+        text.rot=90, labsize = 1.2,  
+        y.width.low=0.05,y.width.high=0.05, 
+        col.high="light blue",col.low="light green",
+        col.interaction = "grey90", ybig = 1.5,
+        x.lim = c(0,1.5), sequence = list(seq.low = c("Konye - wet", "Konye - dry",
+                                                      "Ayos - wet", "Ayos - dry"),
+                                          seq.high = c(orderAbbr)), y.lim = c(-0.5,2)) 
+
+
+visweb(dietBipartite, labsize = 0.3) 
+
+group.venn(list(H.ruber = c(unique(HRorder$`paste(insectData$order, insectData$sacc, sep = "")`)),
+                R.alcyone = c(unique(RAorder$`paste(insectData$order, insectData$sacc, sep = "")`))),
+           label = FALSE, lab.cex=1, cex = 1.5,
+           cat.cex = 1.5, cat.pos=c(220, 150), cat.dist = 0.05, fill = c("lightblue2", "lightpink"))
+      
