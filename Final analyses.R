@@ -1375,3 +1375,6 @@ group.venn(list(H.ruber = c(unique(HRorder$`paste(insectData$order, insectData$s
            label = FALSE, lab.cex=1, cex = 1.5,
            cat.cex = 1.5, cat.pos=c(220, 150), cat.dist = 0.05, fill = c("lightblue2", "lightpink"))
       
+# save focal datasets
+writexl::write_xlsx(insectTaxonomy$HR_occurrences_OTUs, "C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\HR.data.xlsx")
+writexl::write_xlsx(insectTaxonomy$RA_occurrences_OTUs, "C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\RA.data.xlsx")
