@@ -537,7 +537,7 @@ for (name in names(insectTaxonomy[30:39])) {
 # function for calculating RRA
 #####
 RRA_function <- function(df) {
-  sumReadCounts <- c()
+  RRA <- c()
   
   for (row in 1:nrow(df)) {
     totalReadCounts <- c()
@@ -546,21 +546,20 @@ RRA_function <- function(df) {
       
       totalReadCounts <- append(totalReadCounts, as.numeric(df[row,col]/sum(df[,col])))
     }
-    sumReadCounts <- append(sumReadCounts, sum(totalReadCounts))
+    RRA <- append(RRA, (1/ncol(df))*sum(totalReadCounts)*100)
   }
-  return(sumReadCounts)
+  return(RRA)
 }
 #####
 
 #####
 RRAlist <- c()
 for (name in names(insectTaxonomy[18:27])) {
-  sumReadCounts <- RRA_function(insectTaxonomy[[name]])
-  RRAlist <- append(RRAlist, sumReadCounts/length(ncol(insectTaxonomy[[name]]))*100)
+  RRAlist <- append(RRAlist,RRA_function(insectTaxonomy[[name]]))
 }
 
 for (name in names(insectTaxonomy[30:39])) {
-  insectTaxonomy[[name]] <- cbind(insectTaxonomy[[name]], RRAlist[1:nrow(insectTaxonomy[[name]])])
+  insectTaxonomy[[name]] <- cbind(insectTaxonomy[[name]], RRAlist[c(1:nrow(insectTaxonomy[[name]]))])
   RRAlist <- RRAlist[-c(1:nrow(insectTaxonomy[[name]]))]
 }
 #####
@@ -606,7 +605,7 @@ compareShannon <- data.frame(LS = c(rep("Konye - wet", times = length(insectTaxo
                                     rep("Ayos - dry", times = length(insectTaxonomy$RA_AD_occurrence))),
                                     #rep("Bokito - wet", times = length(insectTaxonomy$HR_BW_occurrence)),
                                     #rep("Bokito - dry", times = length(insectTaxonomy$HR_BD_occurrence))),
-                                 Shannon.index = RA_occurrences_Shannon)
+                                 Shannon.index = RA_RRA_Shannon)
 
 compareShannon$LS <- factor(compareShannon$LS,
                                 levels = c("Konye - wet", "Konye - dry",
@@ -641,7 +640,7 @@ compareShannonStats <- data.frame(LS = c(rep("HR - Konye - wet", times = length(
                                               rep("RA - Konye - dry", times = length(insectTaxonomy$RA_KD_occurrence)),
                                               rep("RA - Ayos - wet", times = length(insectTaxonomy$RA_AW_occurrence)),
                                               rep("RA - Ayos - dry", times = length(insectTaxonomy$RA_AD_occurrence))),
-                                       Counts = c(HR_occurrences_Shannon, RA_occurrences_Shannon))
+                                       Counts = c(HR_RRA_Shannon, RA_RRA_Shannon))
 
 
 shapiro.test(compareShannonStats$Counts)
@@ -653,30 +652,40 @@ wilcox.test(c(HR_occurrences_Shannon, RA_occurrences_Shannon), c(HR_RRA_Shannon,
 #####
 
 # Niche breadth
-# function for calculating Levin's index
+# function for calculating Levin's index on incidence data
 #####
 LevinsFunction <- function(df) {
-  sumDietProp <- c()
+  Levins <- c()
   for (col in 1:ncol(df)) {
     dietProp <- c()
     for (row in 1:nrow(df)) {
       dietProp <- append(dietProp, (df[row,col]/sum(df[,col]))^2)
     }
-    sumDietProp <- append(sumDietProp, sum(dietProp))
+    Levins <- append(Levins, 1/sum(dietProp))
   }
   
-  Levins <- c()
   LevinsStd <- c()
-  for (prop in sumDietProp) {
-    std <- 1/prop
-    Levins <- append(Levins, std)
-    LevinsStd <- append(LevinsStd, ((std-1)/(length(df[,1])-1)))
+  for (prop in Levins) {
+    LevinsStd <- append(LevinsStd, ((prop-1)*(1/(length(df[,1])-1))))
   }
   
   return(LevinsStd)
 }
 #####
-
+RRALevinsFunction <- function(df) {
+  Levins <- c()
+  
+  for (col in 1:ncol(df)) {
+    Levins <- append(Levins, (1/sum((df[,col]/100)^2)))
+  }
+  
+  LevinsStd <- c()
+  for (prop in Levins) {
+    LevinsStd <- append(LevinsStd, ((prop-1)*(1/(length(df[,1])-1))))
+  }
+  
+  return(LevinsStd)
+}
 #####
 HR_occurrences_Levins <- c()
 for (name in names(insectTaxonomy[6:11])) {
@@ -685,7 +694,7 @@ for (name in names(insectTaxonomy[6:11])) {
 
 HR_RRA_Levins <- c()
 for (name in names(insectTaxonomy[18:23])) {
-  HR_RRA_Levins <- append(HR_RRA_Levins, LevinsFunction(insectTaxonomy[[name]]))
+  HR_RRA_Levins <- append(HR_RRA_Levins, RRALevinsFunction(insectTaxonomy[[name]]))
 }
 
 RA_occurrences_Levins <- c()
@@ -695,7 +704,7 @@ for (name in names(insectTaxonomy[12:15])) {
 
 RA_RRA_Levins <- c()
 for (name in names(insectTaxonomy[24:27])) {
-  RA_RRA_Levins <- append(RA_RRA_Levins, LevinsFunction(insectTaxonomy[[name]]))
+  RA_RRA_Levins <- append(RA_RRA_Levins, RRALevinsFunction(insectTaxonomy[[name]]))
 }
 
 compareLevins <- data.frame(LS = c(rep("Konye - wet", times = length(insectTaxonomy$HR_KW_occurrence)),
@@ -704,7 +713,7 @@ compareLevins <- data.frame(LS = c(rep("Konye - wet", times = length(insectTaxon
                                     rep("Ayos - dry", times = length(insectTaxonomy$HR_AD_occurrence)),
                                     rep("Bokito - wet", times = length(insectTaxonomy$HR_BW_occurrence)),
                                     rep("Bokito - dry", times = length(insectTaxonomy$HR_BD_occurrence))),
-                             Levins.index = HR_RRA_Levins)
+                             Levins.index = HR_occurrences_Levins)
 
 compareLevins$LS <- factor(compareLevins$LS,
                             levels = c("Konye - wet", "Konye - dry",
@@ -741,7 +750,7 @@ compareLevinsStats <- data.frame(LS = c(rep("HR - Konye - wet", times = length(i
                                          rep("RA - Konye - dry", times = length(insectTaxonomy$RA_KD_occurrence)),
                                          rep("RA - Ayos - wet", times = length(insectTaxonomy$RA_AW_occurrence)),
                                          rep("RA - Ayos - dry", times = length(insectTaxonomy$RA_AD_occurrence))),
-                                  Counts = c(HR_RRA_Levins, RA_RRA_Levins))
+                                  Counts = c(HR_occurrences_Levins, RA_occurrences_Levins))
 
 
 shapiro.test(compareLevinsStats$Counts)
@@ -1378,3 +1387,118 @@ group.venn(list(H.ruber = c(unique(HRorder$`paste(insectData$order, insectData$s
 # save focal datasets
 writexl::write_xlsx(insectTaxonomy$HR_occurrences_OTUs, "C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\HR.data.xlsx")
 writexl::write_xlsx(insectTaxonomy$RA_occurrences_OTUs, "C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\RA.data.xlsx")
+
+# calculate Shannon's and Levin's index on wPOO and RRA
+wPOO_Shannon <- c()
+for (name in names(insectTaxonomy[30:39])) {
+  wPOO_Shannon <- append(wPOO_Shannon, diversity(insectTaxonomy[[name]]$wPOOlist[1:nrow(insectTaxonomy[[name]])], "shannon"))
+}
+
+RRA_Shannon <- c()
+for (name in names(insectTaxonomy[30:39])) {
+  RRA_Shannon <- append(RRA_Shannon, diversity(insectTaxonomy[[name]]$`RRAlist[c(1:nrow(insectTaxonomy[[name]]))]`, "shannon"))
+}
+
+wPOO_Levins <- c()
+for (name in names(insectTaxonomy[30:39])) {
+  dietProp <- c()
+  for (row in 1:nrow(insectTaxonomy[[name]])) {
+    dietProp <- append(dietProp, 
+                       (insectTaxonomy[[name]][row, "wPOOlist[1:nrow(insectTaxonomy[[name]])]"]/sum(insectTaxonomy[[name]]$`wPOOlist[1:nrow(insectTaxonomy[[name]])]`))^2)
+  }
+  Levins <- 1/sum(dietProp)
+  wPOO_Levins <- append(wPOO_Levins, (1/(length(insectTaxonomy[[name]][,1])-1))*(Levins-1))
+}
+
+
+RRA_Levins <- c()
+for (name in names(insectTaxonomy[30:39])) {
+  dietProp <- c()
+  for (row in 1:nrow(insectTaxonomy[[name]])) {
+    dietProp <- append(dietProp, 
+                       (insectTaxonomy[[name]][row, "RRAlist[c(1:nrow(insectTaxonomy[[name]]))]"]/sum(insectTaxonomy[[name]]$`RRAlist[c(1:nrow(insectTaxonomy[[name]]))]`))^2)
+  }
+  Levins <- 1/sum(dietProp)
+  RRA_Levins <- append(RRA_Levins, (1/(length(insectTaxonomy[[name]][,1])-1))*(Levins-1))
+}
+
+HRlevinsData <- data.frame(LS = rep(LocationSeasonList, times = 2),
+                         Metric = c(rep("wPOO", times = 6), rep("RRA", times = 6)),
+                         Levins = c(wPOO_Levins[1:6], RRA_Levins[1:6])) 
+
+HRlevinsData$LS <- factor(HRlevinsData$LS,
+                        levels = c(LocationSeasonList))
+
+y_expression <- expression("Levin's index" ~ "" ~(B[A]))
+
+HRlevinsPlot <- ggplot(HRlevinsData, aes(x = LS, y = Levins, fill = Metric)) + 
+  geom_bar(stat="identity", position = "dodge") +
+  theme_minimal() + scale_fill_manual(values = c("darkolivegreen3", "darkorange")) +
+  theme(strip.background = element_blank(),
+        strip.text = element_text(size = 12),
+        axis.title.x = element_text(size = 12),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 12),
+        axis.text.x = element_text(size = 10, angle = 45, vjust = 0.5)) +
+  labs(x = "Location - Season", y = y_expression)
+
+compareShannonDF <- compareShannonStats[compareShannonStats$LS=="HR - Bokito - wet",]
+wilcox.test(compareShannonDF$Counts, mu = RRA_Shannon[5])
+
+# plot difference in Shannon's and Levin's indices
+
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+
+LevinsMeanList <- c()
+for (LS in unique(compareLevinsStats$LS)) {
+  Sdf <- compareLevinsStats[compareLevinsStats$LS==LS,]
+  LevinsMeanList <- append(LevinsMeanList, mean(Sdf$Counts))
+}
+
+incidenceLevins <- data.frame(LS = rep(LocationSeasonList[-c(5:6)], times = 2),
+                               Group = c(rep("individual", times = 4), 
+                                         rep("population", times = 4)),
+                               Levins = c(LevinsMeanList[7:10],RRA_Levins[7:10]))
+
+incidenceLevins$LS <- factor(incidenceLevins$LS,
+                         levels = c("Konye - wet", "Konye - dry",
+                                    "Ayos - wet", "Ayos - dry"))
+                                    #"Bokito - wet", "Bokito - dry"))
+
+g1 <- ggplot(incidenceLevins, aes(x=LS, y = Levins, color = Group, group = LS)) + 
+  geom_point(aes(color = Group),size=4) +
+  geom_path(arrow=arrow(type = "closed", length = unit(0.2, "cm")), color = "grey50", size = 0.5) +
+  theme_minimal() + scale_color_manual(values = c("darkolivegreen3", "darkorange")) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5)) +
+  labs(x = "Location - Season", y = y_expression)
+
+g1
+
+differenceDF <- data.frame(SampleSize = c(nrow(insectTaxonomy$HR_KW_occurrence),
+                                          nrow(insectTaxonomy$HR_KD_occurrence),
+                                          nrow(insectTaxonomy$HR_AW_occurrence),
+                                          nrow(insectTaxonomy$HR_AD_occurrence),
+                                          nrow(insectTaxonomy$HR_BW_occurrence),
+                                          nrow(insectTaxonomy$HR_BD_occurrence),
+                                          nrow(insectTaxonomy$RA_KW_occurrence),
+                                          nrow(insectTaxonomy$RA_KD_occurrence),
+                                          nrow(insectTaxonomy$RA_AW_occurrence),
+                                          nrow(insectTaxonomy$RA_AD_occurrence)),
+                           Difference = c(RRA_Levins-LevinsMeanList))
+
+diffPlot <- ggplot(differenceDF, aes(x = SampleSize, y = Difference)) +
+  geom_point() + theme_minimal()
+
+df <- insectTaxonomy$HR_AW_occurrence
+for (row in 1:nrow(df)) {
+  for (col in 1:ncol(df)) {
+    ifelse(df[row,col]==1,
+           df[row,col] <- insectTaxonomy$HR_AW_info[row,"wPOOlist[1:nrow(insectTaxonomy[[name]])]"],
+           df[row,col] <- df[row,col])
+  }
+}
+
+Levins.function(df)
+wPOO_Levins
