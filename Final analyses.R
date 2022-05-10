@@ -1381,6 +1381,35 @@ group.venn(list(H.ruber = c(unique(HRorder$`paste(insectData$order, insectData$s
                 R.alcyone = c(unique(RAorder$`paste(insectData$order, insectData$sacc, sep = "")`))),
            label = FALSE, lab.cex=1, cex = 1.5,
            cat.cex = 1.5, cat.pos=c(220, 150), cat.dist = 0.05, fill = c("lightblue2", "lightpink"))
+
+
+for (name in names(insectTaxonomy[30:41])) {
+  insectTaxonomy <- append(insectTaxonomy, 
+                           list(insectTaxonomy[[name]][-c(which(insectTaxonomy[[name]]$order=="NA")),]))
+  
+}
+
+names(insectTaxonomy) <- c(names(insectTaxonomy[1:61]), "HR_KW_order", "HR_KD_order",
+                                 "HR_AW_order", "HR_AD_order", "HR_BW_order",
+                                 "HR_BD_order", "RA_KW_order", "RA_KD_order",
+                                 "RA_AW_order", "RA_AD_order", "RA_BW_order",
+                                 "RA_BD_order")
+
+JessVenn(list(HRwet = unique(c(insectTaxonomy$HR_BW_order$`paste(insectData$order, insectData$sacc, sep = "")`)),
+                               #insectTaxonomy$HR_AW_order$`paste(insectData$order, insectData$sacc, sep = "")`,
+                               #insectTaxonomy$HR_BW_order$`paste(insectData$order, insectData$sacc, sep = "")`)),
+              HRdry = unique(c(insectTaxonomy$HR_BD_order$`paste(insectData$order, insectData$sacc, sep = "")`)),
+                               #insectTaxonomy$HR_AD_order$`paste(insectData$order, insectData$sacc, sep = "")`,
+                               #insectTaxonomy$HR_BD_order$`paste(insectData$order, insectData$sacc, sep = "")`))),
+              RAwet = unique(c(insectTaxonomy$RA_BW_order$`paste(insectData$order, insectData$sacc, sep = "")`)),
+                               #insectTaxonomy$RA_AW_order$`paste(insectData$order, insectData$sacc, sep = "")`,
+                               #insectTaxonomy$RA_BW_order$`paste(insectData$order, insectData$sacc, sep = "")`)),
+              RAdry = unique(c(insectTaxonomy$RA_BD_order$`paste(insectData$order, insectData$sacc, sep = "")`))),
+                               #insectTaxonomy$RA_AD_order$`paste(insectData$order, insectData$sacc, sep = "")`,
+                               #insectTaxonomy$RA_BD_order$`paste(insectData$order, insectData$sacc, sep = "")`))),
+         label = FALSE, lab.cex=1, cex = 1.5,
+         cat.cex = 1.5, cat.dist = c(0.23,0.23, 0.12, 0.12))
+
       
 # save focal datasets
 writexl::write_xlsx(insectTaxonomy$HR_occurrences_OTUs, "C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\HR.data.xlsx")
