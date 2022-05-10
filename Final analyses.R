@@ -1322,7 +1322,7 @@ pheatmap(comparePestMatrix, border_color = "white",
 allSacc <- c(unique(insectData$`paste(insectData$order, insectData$sacc, sep = "")`))
 
 dietMatrix <- matrix(ncol = 0, nrow = length(allSacc))
-for (name in names(insectTaxonomy[30:33])){
+for (name in names(insectTaxonomy[36:39])){
   yesNo <- c()
   dietDF <- insectTaxonomy[[name]][-c(which(insectTaxonomy[[name]]$order=="NA")),]
 
@@ -1335,7 +1335,7 @@ dietMatrix <- cbind(dietMatrix, yesNo)
 }
 
 rownames(dietMatrix) <- c(allSacc)
-colnames(dietMatrix) <- c(names(insectTaxonomy[30:33]))
+colnames(dietMatrix) <- c(names(insectTaxonomy[36:39]))
 
 dietMatrixCut <- filter_rows(dietMatrix)
 dietMatrix <- dietMatrix[-c(dietMatrixCut),]
@@ -1344,13 +1344,11 @@ rownames(dietMatrix) <- c(abbreviate(c(rownames(dietMatrix)), minlength = 3,
                                      strict = TRUE, method = "left.keep", use.classes = FALSE))
 
 # diet networks
-orderAbbr <- c(unique(rownames(dietMatrix))[-c(6,8,10)])
-
+orderAbbr <- c(unique(rownames(dietMatrix)))
 dietTotal <- list()
-for (order in orderAbbr) {
-  dietDF <- data.frame(matrix(ncol = 4, nrow=0))
-  dietDF <- dietMatrix[which(str_detect(order,rownames(dietMatrix))==TRUE),]
-
+for (diet in orderAbbr) {
+  dietDF <- data.frame(matrix(dietMatrix[which(str_detect(diet,rownames(dietMatrix))==TRUE),], ncol = 4))
+  
   dietList <- c()
   for (col in 1:ncol(dietDF)) {
     dietList <- append(dietList, sum(dietDF[,col])) 
@@ -1360,20 +1358,20 @@ for (order in orderAbbr) {
 
 library(bipartite)
 
+
 dietBipartite <- matrix(c(dietTotal[[1]], dietTotal[[2]], 
                           dietTotal[[3]], dietTotal[[4]],
                           dietTotal[[5]], dietTotal[[6]],
-                          dietTotal[[7]]), nrow=7, byrow = TRUE)
-colnames(dietBipartite) <- c(LocationSeasonList[-c(5:6)])
-rownames(dietBipartite) <- c(orderAbbr)
+                          dietTotal[[7]], dietTotal[[8]]), ncol=8)
+rownames(dietBipartite) <- c(LocationSeasonList[-c(5:6)])
+colnames(dietBipartite) <- c(orderAbbr)
 
 plotweb(dietBipartite, 
-        text.rot=90, labsize = 1.2,  
-        y.width.low=0.05,y.width.high=0.05, 
+        text.rot=90, labsize = 1.5,  
+        y.width.low=0.05,y.width.high=0.05,
         col.high="light blue",col.low="light green",
         col.interaction = "grey90", ybig = 1.5,
-        x.lim = c(0,1.5), sequence = list(seq.low = c("Konye - wet", "Konye - dry",
-                                                      "Ayos - wet", "Ayos - dry"),
+        x.lim = c(0,1.2), sequence = list(seq.low = c(LocationSeasonList[-c(5:6)]),
                                           seq.high = c(orderAbbr)), y.lim = c(-0.5,2)) 
 
 
@@ -1451,54 +1449,76 @@ library(ggplot2)
 library(reshape2)
 library(dplyr)
 
-LevinsMeanList <- c()
-for (LS in unique(compareLevinsStats$LS)) {
-  Sdf <- compareLevinsStats[compareLevinsStats$LS==LS,]
-  LevinsMeanList <- append(LevinsMeanList, mean(Sdf$Counts))
-}
-
-incidenceLevins <- data.frame(LS = rep(LocationSeasonList[-c(5:6)], times = 2),
-                               Group = c(rep("individual", times = 4), 
-                                         rep("population", times = 4)),
-                               Levins = c(LevinsMeanList[7:10],RRA_Levins[7:10]))
-
-incidenceLevins$LS <- factor(incidenceLevins$LS,
-                         levels = c("Konye - wet", "Konye - dry",
-                                    "Ayos - wet", "Ayos - dry"))
-                                    #"Bokito - wet", "Bokito - dry"))
-
-g1 <- ggplot(incidenceLevins, aes(x=LS, y = Levins, color = Group, group = LS)) + 
-  geom_point(aes(color = Group),size=4) +
-  geom_path(arrow=arrow(type = "closed", length = unit(0.2, "cm")), color = "grey50", size = 0.5) +
-  theme_minimal() + scale_color_manual(values = c("darkolivegreen3", "darkorange")) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.5)) +
-  labs(x = "Location - Season", y = y_expression)
-
-g1
-
-differenceDF <- data.frame(SampleSize = c(nrow(insectTaxonomy$HR_KW_occurrence),
-                                          nrow(insectTaxonomy$HR_KD_occurrence),
-                                          nrow(insectTaxonomy$HR_AW_occurrence),
-                                          nrow(insectTaxonomy$HR_AD_occurrence),
-                                          nrow(insectTaxonomy$HR_BW_occurrence),
-                                          nrow(insectTaxonomy$HR_BD_occurrence),
-                                          nrow(insectTaxonomy$RA_KW_occurrence),
-                                          nrow(insectTaxonomy$RA_KD_occurrence),
-                                          nrow(insectTaxonomy$RA_AW_occurrence),
-                                          nrow(insectTaxonomy$RA_AD_occurrence)),
-                           Difference = c(RRA_Levins-LevinsMeanList))
-
-diffPlot <- ggplot(differenceDF, aes(x = SampleSize, y = Difference)) +
-  geom_point() + theme_minimal()
-
-df <- insectTaxonomy$HR_AW_occurrence
+df <- insectTaxonomy$RA_AD_occurrence
 for (row in 1:nrow(df)) {
   for (col in 1:ncol(df)) {
     ifelse(df[row,col]==1,
-           df[row,col] <- insectTaxonomy$HR_AW_info[row,"wPOOlist[1:nrow(insectTaxonomy[[name]])]"],
+           df[row,col] <- insectTaxonomy$RA_AD_info[row,"RRAlist[c(1:nrow(insectTaxonomy[[name]]))]"],
            df[row,col] <- df[row,col])
   }
 }
 
-Levins.function(df)
-wPOO_Levins
+
+insectTaxonomy <- append(insectTaxonomy, list(HR_KW_RRA = HR_KW_RRAlevins,
+                                              HR_KD_RRA = HR_KD_RRAlevins,
+                                              HR_AW_RRA = HR_AW_RRAlevins,
+                                              HR_AD_RRA = HR_AD_RRAlevins,
+                                              HR_BW_RRA = HR_BW_RRAlevins,
+                                              HR_BD_RRA = HR_BD_RRAlevins,
+                                              RA_KW_RRA = RA_KW_RRAlevins,
+                                              RA_KD_RRA = RA_KD_RRAlevins,
+                                              RA_AW_RRA = RA_AW_RRAlevins, 
+                                              RA_AD_RRA = RA_AD_RRAlevins))
+
+allRRAshannon <- c()
+for (name in names(insectTaxonomy[52:61])) {
+  allRRAshannon <- append(allRRAshannon, ShannonIndexFunction(insectTaxonomy[[name]]))
+}
+
+RRAshannonStats <- data.frame(LS = c(rep("HR - Konye - wet", times = length(insectTaxonomy$HR_KW_RRA)),
+                                        rep("HR - Konye - dry", times = length(insectTaxonomy$HR_KD_RRA)),
+                                        rep("HR - Ayos - wet", times = length(insectTaxonomy$HR_AW_RRA)),
+                                        rep("HR - Ayos - dry", times = length(insectTaxonomy$HR_AD_RRA)),
+                                        rep("HR - Bokito - wet", times = length(insectTaxonomy$HR_BW_RRA)),
+                                        rep("HR - Bokito - dry", times = length(insectTaxonomy$HR_BD_RRA)),
+                                        rep("RA - Konye - wet", times = length(insectTaxonomy$RA_KW_RRA)),
+                                        rep("RA - Konye - dry", times = length(insectTaxonomy$RA_KD_RRA)),
+                                        rep("RA - Ayos - wet", times = length(insectTaxonomy$RA_AW_RRA)),
+                                        rep("RA - Ayos - dry", times = length(insectTaxonomy$RA_AD_RRA))),
+                                 Counts = c(allRRAshannon))
+
+
+RRAshannonMeanList <- c()
+for (LS in unique(RRAshannonStats$LS)) {
+  Sdf <- RRAshannonStats[RRAshannonStats$LS==LS,]
+  RRAshannonMeanList <- append(RRAshannonMeanList, mean(Sdf$Counts))
+}
+
+incidenceLevins <- data.frame(Species = c(rep("H. ruber", times = 12), rep("R. alcyone", times = 8)),
+                              LS = c(rep(LocationSeasonList, times = 2), rep(LocationSeasonList[-c(5:6)], times = 2)),
+                              Level = (c(rep("individual wPOO", times = 6), 
+                                        rep("population wPOO", times = 6),
+                                        rep("individual wPOO", times = 4),
+                                        rep("population wPOO", times = 4))),
+                              Levins = c(wPOOlevinsMeanList[1:6], wPOO_Levins[1:6],
+                                          wPOOlevinsMeanList[7:10], wPOO_Levins[7:10]))
+
+incidenceLevins$LS <- factor(incidenceLevins$LS,
+                             levels = c("Konye - wet", "Konye - dry",
+                                        "Ayos - wet", "Ayos - dry",
+                                        "Bokito - wet", "Bokito - dry"))
+
+g1 <- ggplot(incidenceLevins, aes(x=LS, y = Levins, color = Level, group = LS)) + 
+  geom_point(aes(color = Level),size=4) +
+  geom_path((aes(x=LS, y=Levins, group=LS)), arrow=arrow(type = "closed", 
+                                                         length = unit(0.2, "cm")),
+                                                         #ends = "both"), 
+            color = "black", size = 0.5) +
+  theme_minimal() + ylim(0,1) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "top") +
+  labs(x = "Location - Season", y = "Shannon Index") +
+  scale_colour_manual(values = c("gold2", "slateblue")) +
+  facet_wrap(vars(Species))
+
+g1
