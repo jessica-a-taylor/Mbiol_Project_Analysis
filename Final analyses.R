@@ -659,40 +659,24 @@ for (name in names(insectTaxonomy[30:39])) {
   RRAonly_Shannon <- append(RRAonly_Shannon, diversity(insectTaxonomy[[name]]$`RRAlist[c(1:nrow(insectTaxonomy[[name]]))]`, "shannon"))
 }
 
+populationShannon <- data.frame(LS = c("Konye - wet", "Konye - dry", "Ayos - wet", 
+                                       "Ayos - dry", "Bokito - wet", "Bokito - dry"),
+                                wPOO = wPOOonly_Shannon[1:6],
+                                RRA = RRAonly_Shannon[1:6])
 
-compareShannon <- data.frame(Species = c(rep("H.ruber", times = length()),
-                                         rep("R.alcyone", times = length())),
+compareShannon <- data.frame(Species = rep("H.ruber", times = length(HR_occurrences_Shannon)),
                              LS = c(rep("Konye - wet", times = length(insectTaxonomy$HR_KW_occurrence)),
                                     rep("Konye - dry", times = length(insectTaxonomy$HR_KD_occurrence)),
                                     rep("Ayos - wet", times = length(insectTaxonomy$HR_AW_occurrence)),
                                     rep("Ayos - dry", times = length(insectTaxonomy$HR_AD_occurrence)),
                                     rep("Bokito - wet", times = length(insectTaxonomy$HR_BW_occurrence)),
-                                    rep("Bokito - dry", times = length(insectTaxonomy$HR_BD_occurrence)),
-                                    rep("Konye - wet", times = length(insectTaxonomy$RA_KW_occurrence)),
-                                    rep("Konye - dry", times = length(insectTaxonomy$RA_KD_occurrence)),
-                                    rep("Ayos - wet", times = length(insectTaxonomy$RA_AW_occurrence)),
-                                    rep("Ayos - dry", times = length(insectTaxonomy$RA_AD_occurrence))),
-                                 Shannon.index = c(HR_occurrences_Shannon,RA_occurrences_Shannon))
+                                    rep("Bokito - dry", times = length(insectTaxonomy$HR_BD_occurrence))),
+                             Shannon.index = HR_occurrences_Shannon)
 
 compareShannon$LS <- factor(compareShannon$LS,
-                                levels = c("Konye - wet", "Konye - dry",
-                                           "Ayos - wet", "Ayos - dry",
-                                           "Bokito - wet", "Bokito - dry"))
-
-compareShannon <- data.frame(Species = c(rep("H.ruber", times = length(HR_occurrences_Shannon)),
-                                         rep("R.alcyone", times = length(RA_occurrences_Shannon))),
-                             LS = c(rep("Konye - wet", times = length(insectTaxonomy$HR_KW_occurrence)),
-                                    rep("Konye - dry", times = length(insectTaxonomy$HR_KD_occurrence)),
-                                    rep("Ayos - wet", times = length(insectTaxonomy$HR_AW_occurrence)),
-                                    rep("Ayos - dry", times = length(insectTaxonomy$HR_AD_occurrence)),
-                                    rep("Bokito - wet", times = length(insectTaxonomy$HR_BW_occurrence)),
-                                    rep("Bokito - dry", times = length(insectTaxonomy$HR_BD_occurrence)),
-                                    rep("Konye - wet", times = length(insectTaxonomy$RA_KW_occurrence)),
-                                    rep("Konye - dry", times = length(insectTaxonomy$RA_KD_occurrence)),
-                                    rep("Ayos - wet", times = length(insectTaxonomy$RA_AW_occurrence)),
-                                    rep("Ayos - dry", times = length(insectTaxonomy$RA_AD_occurrence))),
-                             Shannon.index = c(HR_occurrences_Shannon,RA_occurrences_Shannon))
-
+                               levels = c("Konye - wet", "Konye - dry",
+                                          "Ayos - wet", "Ayos - dry",
+                                          "Bokito - wet", "Bokito - dry"))
 
 compareShannonBoxplot <- ggplot(compareShannon,aes(x=LS, y=Shannon.index, fill = LS)) +
   geom_boxplot(show.legend = FALSE, outlier.shape = NA) + theme_classic() +
@@ -702,19 +686,20 @@ compareShannonBoxplot <- ggplot(compareShannon,aes(x=LS, y=Shannon.index, fill =
                                                 axis.text.y = element_text(size = 10),
                                                 axis.title.y = element_text(size = 12),
                                                 axis.text.x = element_text(size = 10, angle = 45, vjust = 0.5)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + ylim(2,7) +
-  labs(x = "Location - Season", y = "Shannon index") + facet_wrap(vars(Species)) +
-  geom_point(aes(x = LS, y = wPOO))
-
-compareShannonPoint <- ggplot(compareShannon, aes(x = LS, y = wPOO)) + 
-  geom_point()
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + ylim(0.5,5.2) +
+  labs(x = "Location - Season", y = "Shannon index") 
 
 compareShannonBoxplot + annotate("text",
-                                      x = 1:length(table(compareShannon$LS)),
-                                      y = rep(3, times = 4),
-                                      label = table(compareShannon$LS),
-                                      col = "red",
-                                      vjust = - 1)
+                                      x = 1:6,
+                                      y = RRAonly_Shannon[1:6],
+                                      label = "o",
+                                      col = "black",
+                                      vjust = - 1) + annotate("text",
+                              x = 1:length(table(compareShannon$LS)),
+                              y = rep(5, times = 6),
+                              label = table(compareShannon$LS),
+                              col = "red",
+                              vjust = - 1)
 
 compareShannonStats <- data.frame(LS = c(rep("HR - Konye - wet", times = length(insectTaxonomy$HR_KW_occurrence)),
                                               rep("HR - Konye - dry", times = length(insectTaxonomy$HR_KD_occurrence)),
@@ -726,7 +711,7 @@ compareShannonStats <- data.frame(LS = c(rep("HR - Konye - wet", times = length(
                                               rep("RA - Konye - dry", times = length(insectTaxonomy$RA_KD_occurrence)),
                                               rep("RA - Ayos - wet", times = length(insectTaxonomy$RA_AW_occurrence)),
                                               rep("RA - Ayos - dry", times = length(insectTaxonomy$RA_AD_occurrence))),
-                                       Counts = c(HR_occurrences_Shannon, RA_occurrences_Shannon))
+                                       Counts = c(HR_RRA_Shannon, RA_RRA_Shannon))
 
 
 shapiro.test(compareShannonStats$Counts)
@@ -738,6 +723,14 @@ dunnTest(Counts ~ LS, data = compareShannonStats, method = "bonferroni")
 
 mean(c(HR_occurrences_Shannon, RA_occurrences_Shannon))
 wilcox.test(c(HR_occurrences_Shannon, RA_occurrences_Shannon), c(HR_RRA_Shannon, RA_RRA_Shannon))
+
+library(rstatix)
+for (LS in unique(compareShannon$LS)) {
+  df <- compareShannon[compareShannon$LS==LS,]
+  popDF <- populationShannon[populationShannon$LS==LS,]
+  print(wilcox.test(df$Shannon.index, mu = popDF$wPOO, alternative = "two.sided"))
+  print(wilcox_effsize(df, Shannon.index ~ 1, mu = popDF$wPOO, alternative = "two.sided"))
+}
 #####
 
 # Niche breadth
