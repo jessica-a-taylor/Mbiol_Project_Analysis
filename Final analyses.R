@@ -564,6 +564,55 @@ for (name in names(insectTaxonomy[30:39])) {
 }
 #####
 
+# summarise each occurrence as wPOO or RRA
+wPOO_list <- list()
+RRA_list <- list()
+for (name in names(insectTaxonomy[30:39])) {
+  wPOO_list <- append(wPOO_list, list(insectTaxonomy[[name]]$`wPOOlist[1:nrow(insectTaxonomy[[name]])]`))
+  RRA_list <- append(RRA_list, list(insectTaxonomy[[name]]$`RRAlist[c(1:nrow(insectTaxonomy[[name]]))]`))
+}
+
+names(wPOO_list) <- c(names(insectTaxonomy[6:15]))
+names(RRA_list) <- c(names(insectTaxonomy[6:15]))
+
+for (name in names(insectTaxonomy[6:15])) {
+  df <- insectTaxonomy[[name]]
+  for (row in 1:nrow(df)) {
+    for (col in 1:ncol(df)) {
+      ifelse(df[row,col]==1,
+             df[row,col] <- wPOO_list[[name]][row],
+             df[row,col] <- df[row,col])
+    }
+  }
+  insectTaxonomy <- append(insectTaxonomy, list(df))
+}
+
+names(insectTaxonomy) <- c(names(insectTaxonomy[1:41]), "HR_KW_wPOOsummary",
+                           "HR_KD_wPOOsummary", "HR_AW_wPOOsummary", 
+                           "HR_AD_wPOOsummary", "HR_BW_wPOOsummary",
+                           "HR_BD_wPOOsummary", "RA_KW_wPOOsummary",
+                           "RA_KD_wPOOsummary", "RA_AW_wPOOsummary",
+                           "RA_AD_wPOOsummary")
+
+for (name in names(insectTaxonomy[6:15])) {
+  df <- insectTaxonomy[[name]]
+  for (row in 1:nrow(df)) {
+    for (col in 1:ncol(df)) {
+      ifelse(df[row,col]==1,
+             df[row,col] <- RRA_list[[name]][row],
+             df[row,col] <- df[row,col])
+    }
+  }
+  insectTaxonomy <- append(insectTaxonomy, list(df))
+}
+
+names(insectTaxonomy) <- c(names(insectTaxonomy[1:51]), "HR_KW_RRAsummary",
+                           "HR_KD_RRAsummary", "HR_AW_RRAsummary", 
+                           "HR_AD_RRAsummary", "HR_BW_RRAsummary",
+                           "HR_BD_RRAsummary", "RA_KW_RRAsummary",
+                           "RA_KD_RRAsummary", "RA_AW_RRAsummary",
+                           "RA_AD_RRAsummary")
+
 # Shannon diversity 
 # function for calculating Shannon index
 #####
@@ -580,39 +629,72 @@ ShannonIndexFunction <- function(df) {
 
 #####
 HR_occurrences_Shannon <- c()
-for (name in names(insectTaxonomy[6:11])) {
+for (name in names(insectTaxonomy[42:47])) {
   HR_occurrences_Shannon <- append(HR_occurrences_Shannon, ShannonIndexFunction(insectTaxonomy[[name]]))
 }
 
 HR_RRA_Shannon <- c()
-for (name in names(insectTaxonomy[18:23])) {
+for (name in names(insectTaxonomy[52:57])) {
   HR_RRA_Shannon <- append(HR_RRA_Shannon, ShannonIndexFunction(insectTaxonomy[[name]]))
 }
 
 RA_occurrences_Shannon <- c()
-for (name in names(insectTaxonomy[12:15])) {
+for (name in names(insectTaxonomy[48:51])) {
   RA_occurrences_Shannon <- append(RA_occurrences_Shannon, ShannonIndexFunction(insectTaxonomy[[name]]))
 }
 
 RA_RRA_Shannon <- c()
-for (name in names(insectTaxonomy[24:27])) {
+for (name in names(insectTaxonomy[58:61])) {
   RA_RRA_Shannon <- append(RA_RRA_Shannon, ShannonIndexFunction(insectTaxonomy[[name]]))
 }
 
-compareShannon <- data.frame(LS = c(rep("Konye - wet", times = length(insectTaxonomy$RA_KW_occurrence)),
+wPOOonly_Shannon <- c()
+for (name in names(insectTaxonomy[30:39])) {
+  wPOOonly_Shannon <- append(wPOOonly_Shannon, diversity(insectTaxonomy[[name]]$wPOOlist[1:nrow(insectTaxonomy[[name]])], "shannon"))
+}
+
+
+RRAonly_Shannon <- c()
+for (name in names(insectTaxonomy[30:39])) {
+  RRAonly_Shannon <- append(RRAonly_Shannon, diversity(insectTaxonomy[[name]]$`RRAlist[c(1:nrow(insectTaxonomy[[name]]))]`, "shannon"))
+}
+
+
+compareShannon <- data.frame(Species = c(rep("H.ruber", times = length()),
+                                         rep("R.alcyone", times = length())),
+                             LS = c(rep("Konye - wet", times = length(insectTaxonomy$HR_KW_occurrence)),
+                                    rep("Konye - dry", times = length(insectTaxonomy$HR_KD_occurrence)),
+                                    rep("Ayos - wet", times = length(insectTaxonomy$HR_AW_occurrence)),
+                                    rep("Ayos - dry", times = length(insectTaxonomy$HR_AD_occurrence)),
+                                    rep("Bokito - wet", times = length(insectTaxonomy$HR_BW_occurrence)),
+                                    rep("Bokito - dry", times = length(insectTaxonomy$HR_BD_occurrence)),
+                                    rep("Konye - wet", times = length(insectTaxonomy$RA_KW_occurrence)),
                                     rep("Konye - dry", times = length(insectTaxonomy$RA_KD_occurrence)),
                                     rep("Ayos - wet", times = length(insectTaxonomy$RA_AW_occurrence)),
                                     rep("Ayos - dry", times = length(insectTaxonomy$RA_AD_occurrence))),
-                                    #rep("Bokito - wet", times = length(insectTaxonomy$HR_BW_occurrence)),
-                                    #rep("Bokito - dry", times = length(insectTaxonomy$HR_BD_occurrence))),
-                                 Shannon.index = RA_RRA_Shannon)
+                                 Shannon.index = c(HR_occurrences_Shannon,RA_occurrences_Shannon))
 
 compareShannon$LS <- factor(compareShannon$LS,
                                 levels = c("Konye - wet", "Konye - dry",
-                                           "Ayos - wet", "Ayos - dry"))
-                                           #"Bokito - wet", "Bokito - dry"))
+                                           "Ayos - wet", "Ayos - dry",
+                                           "Bokito - wet", "Bokito - dry"))
 
-compareShannonBoxplot <- ggplot(compareShannon, aes(x = LS, y = Shannon.index, fill = LS)) +
+compareShannon <- data.frame(Species = c(rep("H.ruber", times = length(HR_occurrences_Shannon)),
+                                         rep("R.alcyone", times = length(RA_occurrences_Shannon))),
+                             LS = c(rep("Konye - wet", times = length(insectTaxonomy$HR_KW_occurrence)),
+                                    rep("Konye - dry", times = length(insectTaxonomy$HR_KD_occurrence)),
+                                    rep("Ayos - wet", times = length(insectTaxonomy$HR_AW_occurrence)),
+                                    rep("Ayos - dry", times = length(insectTaxonomy$HR_AD_occurrence)),
+                                    rep("Bokito - wet", times = length(insectTaxonomy$HR_BW_occurrence)),
+                                    rep("Bokito - dry", times = length(insectTaxonomy$HR_BD_occurrence)),
+                                    rep("Konye - wet", times = length(insectTaxonomy$RA_KW_occurrence)),
+                                    rep("Konye - dry", times = length(insectTaxonomy$RA_KD_occurrence)),
+                                    rep("Ayos - wet", times = length(insectTaxonomy$RA_AW_occurrence)),
+                                    rep("Ayos - dry", times = length(insectTaxonomy$RA_AD_occurrence))),
+                             Shannon.index = c(HR_occurrences_Shannon,RA_occurrences_Shannon))
+
+
+compareShannonBoxplot <- ggplot(compareShannon,aes(x=LS, y=Shannon.index, fill = LS)) +
   geom_boxplot(show.legend = FALSE, outlier.shape = NA) + theme_classic() +
   scale_fill_brewer(palette = "Accent") + theme(strip.background = element_blank(),
                                                 strip.text = element_text(size = 12),
@@ -620,12 +702,16 @@ compareShannonBoxplot <- ggplot(compareShannon, aes(x = LS, y = Shannon.index, f
                                                 axis.text.y = element_text(size = 10),
                                                 axis.title.y = element_text(size = 12),
                                                 axis.text.x = element_text(size = 10, angle = 45, vjust = 0.5)) +
-  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + 
-  labs(x = "Location - Season", y = "Shannon index") + ylim(2.3,7.2)
+  stat_summary(fun="mean", show.legend = FALSE, color="black", shape=18) + ylim(2,7) +
+  labs(x = "Location - Season", y = "Shannon index") + facet_wrap(vars(Species)) +
+  geom_point(aes(x = LS, y = wPOO))
+
+compareShannonPoint <- ggplot(compareShannon, aes(x = LS, y = wPOO)) + 
+  geom_point()
 
 compareShannonBoxplot + annotate("text",
                                       x = 1:length(table(compareShannon$LS)),
-                                      y = rep(6.75, times = 4),
+                                      y = rep(3, times = 4),
                                       label = table(compareShannon$LS),
                                       col = "red",
                                       vjust = - 1)
@@ -640,12 +726,15 @@ compareShannonStats <- data.frame(LS = c(rep("HR - Konye - wet", times = length(
                                               rep("RA - Konye - dry", times = length(insectTaxonomy$RA_KD_occurrence)),
                                               rep("RA - Ayos - wet", times = length(insectTaxonomy$RA_AW_occurrence)),
                                               rep("RA - Ayos - dry", times = length(insectTaxonomy$RA_AD_occurrence))),
-                                       Counts = c(HR_RRA_Shannon, RA_RRA_Shannon))
+                                       Counts = c(HR_occurrences_Shannon, RA_occurrences_Shannon))
 
 
 shapiro.test(compareShannonStats$Counts)
 compareShannonkruskal <- kruskal.test(data = compareShannonStats, x = compareShannonStats$Counts,
                                         g = compareShannonStats$LS, formula = Counts ~ LS)
+
+library(FSA)
+dunnTest(Counts ~ LS, data = compareShannonStats, method = "bonferroni")
 
 mean(c(HR_occurrences_Shannon, RA_occurrences_Shannon))
 wilcox.test(c(HR_occurrences_Shannon, RA_occurrences_Shannon), c(HR_RRA_Shannon, RA_RRA_Shannon))
@@ -656,55 +745,41 @@ wilcox.test(c(HR_occurrences_Shannon, RA_occurrences_Shannon), c(HR_RRA_Shannon,
 #####
 LevinsFunction <- function(df) {
   Levins <- c()
+  std <- c()
   for (col in 1:ncol(df)) {
     dietProp <- c()
     for (row in 1:nrow(df)) {
-      dietProp <- append(dietProp, (df[row,col]/sum(df[,col]))^2)
+             dietProp <- append(dietProp, (df[row,col]/sum(df[,col]))^2)
     }
     Levins <- append(Levins, 1/sum(dietProp))
+  
+    std <- append(std, length(which(df[,col]>0))-1)
   }
   
-  LevinsStd <- c()
-  for (prop in Levins) {
-    LevinsStd <- append(LevinsStd, ((prop-1)*(1/(length(df[,1])-1))))
-  }
+  LevinsStd <- (Levins-1)/std
   
-  return(LevinsStd)
-}
-#####
-RRALevinsFunction <- function(df) {
-  Levins <- c()
-  
-  for (col in 1:ncol(df)) {
-    Levins <- append(Levins, (1/sum((df[,col]/100)^2)))
-  }
-  
-  LevinsStd <- c()
-  for (prop in Levins) {
-    LevinsStd <- append(LevinsStd, ((prop-1)*(1/(length(df[,1])-1))))
-  }
   
   return(LevinsStd)
 }
 #####
 HR_occurrences_Levins <- c()
-for (name in names(insectTaxonomy[6:11])) {
+for (name in names(insectTaxonomy[42:47])) {
   HR_occurrences_Levins <- append(HR_occurrences_Levins, LevinsFunction(insectTaxonomy[[name]]))
 }
 
 HR_RRA_Levins <- c()
-for (name in names(insectTaxonomy[18:23])) {
-  HR_RRA_Levins <- append(HR_RRA_Levins, RRALevinsFunction(insectTaxonomy[[name]]))
+for (name in names(insectTaxonomy[52:57])) {
+  HR_RRA_Levins <- append(HR_RRA_Levins, LevinsFunction(insectTaxonomy[[name]]))
 }
 
 RA_occurrences_Levins <- c()
-for (name in names(insectTaxonomy[12:15])) {
+for (name in names(insectTaxonomy[48:51])) {
   RA_occurrences_Levins <- append(RA_occurrences_Levins, LevinsFunction(insectTaxonomy[[name]]))
 }
 
 RA_RRA_Levins <- c()
-for (name in names(insectTaxonomy[24:27])) {
-  RA_RRA_Levins <- append(RA_RRA_Levins, RRALevinsFunction(insectTaxonomy[[name]]))
+for (name in names(insectTaxonomy[58:61])) {
+  RA_RRA_Levins <- append(RA_RRA_Levins, LevinsFunction(insectTaxonomy[[name]]))
 }
 
 compareLevins <- data.frame(LS = c(rep("Konye - wet", times = length(insectTaxonomy$HR_KW_occurrence)),
@@ -740,7 +815,9 @@ compareLevinsBoxplot + annotate("text",
                                  col = "red",
                                  vjust = - 1)
 
-compareLevinsStats <- data.frame(LS = c(rep("HR - Konye - wet", times = length(insectTaxonomy$HR_KW_occurrence)),
+compareLevinsStats <- data.frame(Species = c(rep("H.ruber", times = length(HR_occurrences_Levins)),
+                                             rep("R.alcyone", times = length(RA_occurrences_Levins))),
+                                 LS = c(rep("HR - Konye - wet", times = length(insectTaxonomy$HR_KW_occurrence)),
                                          rep("HR - Konye - dry", times = length(insectTaxonomy$HR_KD_occurrence)),
                                          rep("HR - Ayos - wet", times = length(insectTaxonomy$HR_AW_occurrence)),
                                          rep("HR - Ayos - dry", times = length(insectTaxonomy$HR_AD_occurrence)),
@@ -754,14 +831,16 @@ compareLevinsStats <- data.frame(LS = c(rep("HR - Konye - wet", times = length(i
 
 
 shapiro.test(compareLevinsStats$Counts)
-compareShannonkruskal <- kruskal.test(data = compareLevinsStats, x = compareLevinsStats$Counts,
-                                      g = compareLevinsStats$LS, formula = Counts ~ LS)
+compareLevinsruskal <- kruskal.test(data = compareLevinsStats, 
+                                    x = compareLevinsStats$Counts,
+                                    g = compareLevinsStats$LS, 
+                                    formula = Counts ~ LS)
 
 library(FSA)
 dunnTest(Counts ~ LS, data = compareLevinsStats, method = "bonferroni")
 
-mean(c(HR_occurrences_Levins, RA_occurrences_Levins))
-wilcox.test(c(HR_occurrences_Levins, RA_occurrences_Levins), c(HR_RRA_Levins, RA_RRA_Levins))
+mean(c(HR_RRA_Levins, RA_RRA_Levins[-which(RA_RRA_Levins=="NaN")]))
+wilcox.test(c(HR_occurrences_Levins, RA_occurrences_Levins[-which(RA_occurrences_Levins=="NaN")]), c(HR_RRA_Levins, RA_RRA_Levins[-which(RA_RRA_Levins=="NaN")]))
 #####
 
 # Pianka's niche overlap index
@@ -1416,15 +1495,7 @@ writexl::write_xlsx(insectTaxonomy$HR_occurrences_OTUs, "C:\\Users\\jexy2\\OneDr
 writexl::write_xlsx(insectTaxonomy$RA_occurrences_OTUs, "C:\\Users\\jexy2\\OneDrive\\Documents\\Mbiol project\\RA.data.xlsx")
 
 # calculate Shannon's and Levin's index on wPOO and RRA
-wPOO_Shannon <- c()
-for (name in names(insectTaxonomy[30:39])) {
-  wPOO_Shannon <- append(wPOO_Shannon, diversity(insectTaxonomy[[name]]$wPOOlist[1:nrow(insectTaxonomy[[name]])], "shannon"))
-}
 
-RRA_Shannon <- c()
-for (name in names(insectTaxonomy[30:39])) {
-  RRA_Shannon <- append(RRA_Shannon, diversity(insectTaxonomy[[name]]$`RRAlist[c(1:nrow(insectTaxonomy[[name]]))]`, "shannon"))
-}
 
 wPOO_Levins <- c()
 for (name in names(insectTaxonomy[30:39])) {
